@@ -1,0 +1,19 @@
+# Folder config file
+.DS_Store
+*.DS_Store
+*.jpg
+*.psd
+Icon*
+TCP.*
+*.mp4
+*.txt
+*.mp3
+*.mov
+*.aac
+*.md*
+*.h
+*.cpp
+*.xlsx
+*.jpeg
+*.pdf
+DS_Store.xorg

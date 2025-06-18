@@ -89,6 +89,7 @@ function ToLissAN_IncludeResourcesForMenu()
     ToLissAN.XPLM = ToLissAN.ffi.load("XPLM_64")
     ToLissAN.log("✅ Resources FFI definitions loaded")
 end
+
 --++---------------------------------------------------------------------++
 --|| ToLissAN_LoadCommonSoundsForEvents() Load common sounds for events  ||
 --++---------------------------------------------------------------------++
@@ -205,7 +206,6 @@ function ToLissAN_Initialization()
     ToLissAN_IncludeResourcesForMenu()
     ToLissAN.item_refs = {} -- For the menu pointer
     ToLissAN_LoadCommonSoundsForEvents()
-    ToLissAN_SetSoundsFlagsForEvents()
     ToLissAN_LoadDatarefsForEvents()
     ToLissAN.log("✅ Initialization done")
 end
@@ -274,38 +274,44 @@ function ToLissAN_CheckDataref()
     -----------------------
     -- BOARDING AMBIENCE --
     -----------------------
-    if ToLissAN_preflight and ToLissAN_ext_pwr_prev ~= ToLissAN_ext_pwr then
-        if ToLissAN_ext_pwr == 1 then
-            set_sound_gain(ToLissAN.boarding_ambience, 0.10)
-            play_sound(ToLissAN.boarding_ambience)
-        elseif ToLissAN_ext_pwr ~= 1 then
-            stop_sound(ToLissAN.boarding_ambience)
-        end
+    if ToLissAN_preflight and
+       not ToLissAN.common_sounds["Boarding_Ambience"].played and
+       ToLissAN_ext_pwr_prev ~= ToLissAN_ext_pwr then
+        ---
         ToLissAN_ext_pwr_prev = ToLissAN_ext_pwr
+        if ToLissAN_ext_pwr == 1 then
+            set_sound_gain(ToLissAN.common_sounds["Boarding_Ambience"].sound, 0.10)
+            play_sound(ToLissAN.common_sounds["Boarding_Ambience"].sound)
+            ToLissAN.common_sounds["Boarding_Ambience"].played = true
+        end
     end
 
     -----------------------
     -- DOORS CROSS CHECK --
     -----------------------
-    if ToLissAN_preflight and ToLissAN_main_door_prev ~= ToLissAN_main_door then
-        if ToLissAN_main_door == 0 then
-            play_sound(ToLissAN.doors_cross_check)
-        elseif ToLissAN_main_door ~= 0 then
-            stop_sound(ToLissAN.doors_cross_check)
-        end
+    if ToLissAN_preflight and
+       not ToLissAN.common_sounds["DoorsCrossCheck"].played and
+       ToLissAN_main_door_prev ~= ToLissAN_main_door then
+        ---
         ToLissAN_main_door_prev = ToLissAN_main_door
+        if ToLissAN_main_door == 0 then
+            play_sound(ToLissAN.common_sounds["DoorsCrossCheck"].sound)
+            ToLissAN.common_sounds["DoorsCrossCheck"].played = true
+        end
     end
 
     -----------------
     -- CPT WELCOME --
     -----------------
-    if ToLissAN_preflight and ToLissAN_beacon_light_prev ~= ToLissAN_beacon_light then
-        if ToLissAN_beacon_light == 1 then
-            play_sound(ToLissAN.cpt_welcome)
-        elseif ToLissAN_beacon_light ~= 1 then
-            stop_sound(ToLissAN.cpt_welcome)
-        end
+    if ToLissAN_preflight and
+       not ToLissAN.common_sounds["CptWelcome"].played and
+       ToLissAN_beacon_light_prev ~= ToLissAN_beacon_light then
+        ---
         ToLissAN_beacon_light_prev = ToLissAN_beacon_light
+        if ToLissAN_beacon_light == 1 then
+            play_sound(ToLissAN.common_sounds["CptWelcome"].sound)
+            ToLissAN.common_sounds["CptWelcome"].played = true
+        end
     end
 
     --------------------
@@ -314,6 +320,17 @@ function ToLissAN_CheckDataref()
     if ToLissAN_preflight and ToLissAN_airbus_started and not ToLissAN_safety_sound_played then
         play_sound(ToLissAN.safety_sound)
         ToLissAN_safety_sound_played = true
+    end
+
+    if ToLissAN_preflight and
+       not ToLissAN.common_sounds["CptWelcome"].played and
+       ToLissAN_beacon_light_prev ~= ToLissAN_beacon_light then
+        ---
+        ToLissAN_beacon_light_prev = ToLissAN_beacon_light
+        if ToLissAN_beacon_light == 1 then
+            play_sound(ToLissAN.common_sounds["CptWelcome"].sound)
+            ToLissAN.common_sounds["CptWelcome"].played = true
+        end
     end
 
     -----------------

@@ -89,25 +89,52 @@ function ToLissAN_IncludeResourcesForMenu()
     ToLissAN.XPLM = ToLissAN.ffi.load("XPLM_64")
     ToLissAN.log("✅ Resources FFI definitions loaded")
 end
-
 --++---------------------------------------------------------------------++
 --|| ToLissAN_LoadCommonSoundsForEvents() Load common sounds for events  ||
 --++---------------------------------------------------------------------++
 function ToLissAN_LoadCommonSoundsForEvents()
     ToLissAN.log("✅ ---ToLissAN_LoadCommonSoundsForEvents---")
-    ToLissAN.boarding_ambience = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/Boarding_Ambience.wav")
-    ToLissAN.doors_cross_check = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/DoorsCrossCheck.wav")
-    ToLissAN.cpt_welcome       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptWelcome.wav")
-    -- Safety sound treat in another place
-    ToLissAN.cpt_takeoff       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptTakeoff.wav")
-    ToLissAN.thrus_set         = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/ThrustSet.wav")
-    ToLissAN.one_hundred_kts   = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/100kts.wav")
-    ToLissAN.v1                = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/V1.wav")
-    ToLissAN.rotate            = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/Rotate.wav")
-    ToLissAN.duty_free         = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/DutyFree.wav")
-    ToLissAN.cpt_cruise        = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptCruiseLvl.wav")
-    ToLissAN.cpt_descent       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptDescent.wav")
-    ToLissAN.cpt_landing       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptLanding.wav")
+
+    local sounds = {
+        Boarding_Ambience       = "Boarding_Ambience.wav",
+        DoorsCrossCheck         = "DoorsCrossCheck.wav",
+        CptWelcome              = "CptWelcome.wav",
+        -- safety_sound treated elsewhere
+        CptTakeoff              = "CptTakeoff.wav",
+        ThrustSet               = "ThrustSet.wav",
+        ["100kts"]              = "100kts.wav",
+        V1                      = "V1.wav",
+        Rotate                  = "Rotate.wav",
+        PositiveClimb           = "PositiveClimb.wav",
+        GearUp                  = "GearUp.wav",
+        SpeedCheckFlap0         = "SpeedCheckFlap0.wav",
+        SpeedCheckFlap1         = "SpeedCheckFlap1.wav",
+        SpeedCheckFlap2         = "SpeedCheckFlap2.wav",
+        SpeedCheckFlap3         = "SpeedCheckFlap3.wav",
+        SpeedCheckFlapFull      = "SpeedCheckFlapFull.wav",
+        DutyFree                = "DutyFree.wav",
+        CptCruiseLvl            = "CptCruiseLvl.wav",
+        CptDescent              = "CptDescent.wav",
+        CptLanding              = "CptLanding.wav",
+        GearDown                = "GearDown.wav",
+        Spoilers                = "Spoilers.wav",
+        ReverseGreen            = "ReverseGreen.wav",
+        Decel                   = "Decel.wav",
+        ["70kts"]               = "70kts.wav",
+    }
+
+    ToLissAN.common_sounds = {}
+
+    for name, file in pairs(sounds) do
+        ToLissAN.common_sounds[name] = {
+            file = ToLissAN.sounds_pack_path .. "/Common/" .. file,
+            sound = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/" .. file),
+            played = false,
+        }
+
+        ToLissAN[name] = ToLissAN.common_sounds[name].sound
+    end
+
     ToLissAN.log("✅ Common Sounds loaded")
 end
 
@@ -120,6 +147,7 @@ function ToLissAN_LoadDatarefsForEvents()
     --+=========================================+
     --| Boolean variables when reading datarefs |
     --+=========================================+
+    -- FOR PHASES
     ToLissAN_preflight = false
     ToLissAN_takeoff = false
     ToLissAN_climb = false
@@ -127,16 +155,12 @@ function ToLissAN_LoadDatarefsForEvents()
     ToLissAN_descent = false
     ToLissAN_approach = false
     ToLissAN_landing = false
-    ToLissAN_thrust_set_played = false
+    -- FOR EVENTS REACHED
+    ToLissAN_airbus_started = false
     ToLissAN_100kts_reached = false
-    ToLissAN_100kts_played = false
     ToLissAN_v1_reached = false
-    ToLissAN_v1_played = false
     ToLissAN_v2_reached = false
-    ToLissAN_rotate_played = false
     ToLissAN_10000_feet_reached = false
-    ToLissAN_cpt_cruise_played = false
-    ToLissAN_cpt_descent_played = false
 
     --+=========================+
     --| Datarefs for monitoring |
@@ -181,6 +205,7 @@ function ToLissAN_Initialization()
     ToLissAN_IncludeResourcesForMenu()
     ToLissAN.item_refs = {} -- For the menu pointer
     ToLissAN_LoadCommonSoundsForEvents()
+    ToLissAN_SetSoundsFlagsForEvents()
     ToLissAN_LoadDatarefsForEvents()
     ToLissAN.log("✅ Initialization done")
 end
@@ -216,6 +241,14 @@ function ToLissAN_CheckDataref()
             ToLissAN_landing = true
         end
         ToLissAN_toliss_phase_prev = ToLissAN_toliss_phase
+    end
+
+    if ToLissAN_preflight and (ToLissAN_eng1_switch_on_prev ~= ToLissAN_eng1_switch_on or ToLissAN_eng2_switch_on_prev ~= ToLissAN_eng2_switch_on) then
+        if ToLissAN_eng1_switch_on == 1 or ToLissAN_eng2_switch_on == 1 then
+            ToLissAN_airbus_started = true
+        end
+        ToLissAN_eng1_switch_on_prev = ToLissAN_eng1_switch_on
+        ToLissAN_eng2_switch_on_prev = ToLissAN_eng2_switch_on
     end
 
     if ToLissAN_takeoff and ToLissAN_ias_capt_prev ~= ToLissAN_ias_capt then
@@ -278,16 +311,9 @@ function ToLissAN_CheckDataref()
     --------------------
     -- SAFETY ANNONCE --
     --------------------
-    if ToLissAN_preflight and
-       (ToLissAN_eng1_switch_on_prev ~= ToLissAN_eng1_switch_on or
-        ToLissAN_eng2_switch_on_prev ~= ToLissAN_eng2_switch_on) then
-        if ToLissAN_eng1_switch_on == 1 or ToLissAN_eng2_switch_on == 1 then
-            play_sound(ToLissAN.safety_sound)
-        elseif ToLissAN_eng1_switch_on ~= 1 or ToLissAN_eng2_switch_on ~= 1 then
-            stop_sound(ToLissAN.safety_sound)
-        end
-        ToLissAN_eng1_switch_on_prev = ToLissAN_eng1_switch_on
-        ToLissAN_eng2_switch_on_prev = ToLissAN_eng2_switch_on
+    if ToLissAN_preflight and ToLissAN_airbus_started and not ToLissAN_safety_sound_played then
+        play_sound(ToLissAN.safety_sound)
+        ToLissAN_safety_sound_played = true
     end
 
     -----------------
@@ -374,7 +400,7 @@ function ToLissAN_PrepareMenu()
     ToLissAN.submenu = ToLissAN.XPLM.XPLMCreateMenu("ToLissCo", ToLissAN.plugins_menu, ToLissAN.top_item_index, ToLissAN.C_menu_callback, nil)
 
     for _, company in ipairs(ToLissAN.get_company_list()) do
-        if company ~= "common" then  -- 🆕 Ignore the 'common' folder
+        if company ~= "common" then
             local ptr = ToLissAN.ffi.new("char[?]", #company + 1, company)
             ToLissAN.item_refs[company] = ptr
             ToLissAN.XPLM.XPLMAppendMenuItem(ToLissAN.submenu, company, ptr, 0)

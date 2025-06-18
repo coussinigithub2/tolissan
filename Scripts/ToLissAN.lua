@@ -100,6 +100,10 @@ function ToLissAN_LoadCommonSoundsForEvents()
     ToLissAN.cpt_welcome       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptWelcome.wav")
     -- Safety sound treat in another place
     ToLissAN.cpt_takeoff       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptTakeoff.wav")
+    ToLissAN.thrus_set         = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/ThrustSet.wav")
+    ToLissAN.one_hundred_kts   = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/100kts.wav")
+    ToLissAN.v1                = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/V1.wav")
+    ToLissAN.rotate            = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/Rotate.wav")
     ToLissAN.duty_free         = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/DutyFree.wav")
     ToLissAN.cpt_cruise        = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptCruiseLvl.wav")
     ToLissAN.cpt_descent       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptDescent.wav")
@@ -123,6 +127,13 @@ function ToLissAN_LoadDatarefsForEvents()
     ToLissAN_descent = false
     ToLissAN_approach = false
     ToLissAN_landing = false
+    ToLissAN_thrust_set_played = false
+    ToLissAN_100kts_reached = false
+    ToLissAN_100kts_played = false
+    ToLissAN_v1_reached = false
+    ToLissAN_v1_played = false
+    ToLissAN_v2_reached = false
+    ToLissAN_rotate_played = false
     ToLissAN_10000_feet_reached = false
     ToLissAN_cpt_cruise_played = false
     ToLissAN_cpt_descent_played = false
@@ -142,6 +153,10 @@ function ToLissAN_LoadDatarefsForEvents()
     ToLissAN_eng2_switch_on_prev = -1
     DataRef("ToLissAN_strobe_light_on","AirbusFBW/OHPLightSwitches","readonly",7)   -- Strobe light on (0=off,1=auto,2=on)
     ToLissAN_strobe_light_on_prev = -1
+    DataRef("ToLissAN_v1","toliss_airbus/performance/V1","readonly")                -- V1 value
+    DataRef("ToLissAN_v2","toliss_airbus/performance/V2","readonly")                -- V2 value
+    DataRef("ToLissAN_ias_capt","AirbusFBW/IASCapt","readonly")                     -- Ias Captain (speed)
+    ToLissAN_ias_capt_prev = -1
     DataRef("ToLissAN_seat_belt_signs_on","AirbusFBW/SeatBeltSignsOn","readonly")   -- Seat belt sign on (0=off,1=on)
     ToLissAN_seat_belt_signs_on_prev = -1
     DataRef("ToLissAN_altitude_captain","AirbusFBW/ALTCapt","readonly")             -- Altitude Captain side
@@ -203,8 +218,21 @@ function ToLissAN_CheckDataref()
         ToLissAN_toliss_phase_prev = ToLissAN_toliss_phase
     end
 
-    if ToLissAN_climb and ToLissAN_altitude_captain ~= ToLissAN_altitude_captain_prev then
-        if not ToLissAN_10000_feet_reached and ToLissAN_altitude_captain > 10000 then
+    if ToLissAN_takeoff and ToLissAN_ias_capt_prev ~= ToLissAN_ias_capt then
+        if ToLissAN_ias_capt > 100 then
+            ToLissAN_100kts_reached = true
+        end
+        if ToLissAN_ias_capt > ToLissAN_v1 then
+            ToLissAN_v1_reached = true
+        end
+        if ToLissAN_ias_capt > ToLissAN_v2 then
+            ToLissAN_v2_reached = true
+        end
+        ToLissAN_ias_capt_prev = ToLissAN_ias_capt
+    end
+
+    if ToLissAN_climb and ToLissAN_altitude_captain_prev ~= ToLissAN_altitude_captain then
+        if ToLissAN_altitude_captain > 10000 then
             ToLissAN_10000_feet_reached = true
         end
         ToLissAN_altitude_captain_prev = ToLissAN_altitude_captain
@@ -274,6 +302,30 @@ function ToLissAN_CheckDataref()
         ToLissAN_strobe_light_on_prev = ToLissAN_strobe_light_on
     end
 
+    -------------
+    -- 100 KTS --
+    -------------
+    if ToLissAN_takeoff and ToLissAN_100kts_reached and not ToLissAN_100kts_played then
+        play_sound(ToLissAN.one_hundred_kts)
+        ToLissAN_100kts_played = true
+    end
+
+    --------
+    -- V1 --
+    --------
+    if ToLissAN_takeoff and ToLissAN_v1_reached and not ToLissAN_v1_played then
+        play_sound(ToLissAN.v1)
+        ToLissAN_v1_played = true
+    end
+
+    ------------------
+    -- V2 OR ROTATE --
+    ------------------
+    if ToLissAN_takeoff and ToLissAN_v2_reached and not ToLissAN_rotate_played then
+        play_sound(ToLissAN.rotate)
+        ToLissAN_rotate_played = true
+    end
+
     ---------------
     -- DUTY FREE --
     ---------------
@@ -322,9 +374,11 @@ function ToLissAN_PrepareMenu()
     ToLissAN.submenu = ToLissAN.XPLM.XPLMCreateMenu("ToLissCo", ToLissAN.plugins_menu, ToLissAN.top_item_index, ToLissAN.C_menu_callback, nil)
 
     for _, company in ipairs(ToLissAN.get_company_list()) do
-        local ptr = ToLissAN.ffi.new("char[?]", #company + 1, company)
-        ToLissAN.item_refs[company] = ptr
-        ToLissAN.XPLM.XPLMAppendMenuItem(ToLissAN.submenu, company, ptr, 0)
+        if company ~= "common" then  -- 🆕 Ignore the 'common' folder
+            local ptr = ToLissAN.ffi.new("char[?]", #company + 1, company)
+            ToLissAN.item_refs[company] = ptr
+            ToLissAN.XPLM.XPLMAppendMenuItem(ToLissAN.submenu, company, ptr, 0)
+        end
     end
     ToLissAN.log("✅ Menu created")
 end

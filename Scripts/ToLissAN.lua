@@ -96,13 +96,14 @@ end
 function ToLissAN_LoadCommonSoundsForEvents()
     ToLissAN.log("✅ ---ToLissAN_LoadCommonSoundsForEvents---")
     ToLissAN.boarding_ambience = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/Boarding_Ambience.wav")
+    ToLissAN.doors_cross_check = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/DoorsCrossCheck.wav")
+    ToLissAN.cpt_welcome       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptWelcome.wav")
+    -- Safety sound treat in another place
+    ToLissAN.cpt_takeoff       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptTakeoff.wav")
+    ToLissAN.duty_free         = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/DutyFree.wav")
     ToLissAN.cpt_cruise        = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptCruiseLvl.wav")
     ToLissAN.cpt_descent       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptDescent.wav")
     ToLissAN.cpt_landing       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptLanding.wav")
-    ToLissAN.cpt_takeoff       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptTakeoff.wav")
-    ToLissAN.cpt_welcome       = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/CptWelcome.wav")
-    ToLissAN.doors_cross_check = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/DoorsCrossCheck.wav")
-    ToLissAN.duty_free         = load_WAV_file(ToLissAN.sounds_pack_path .. "/Common/DutyFree.wav")
     ToLissAN.log("✅ Common Sounds loaded")
 end
 
@@ -123,7 +124,6 @@ function ToLissAN_LoadDatarefsForEvents()
     ToLissAN_approach = false
     ToLissAN_landing = false
     ToLissAN_10000_feet_reached = false
-    ToLissAN_duty_free_played = false
     ToLissAN_cpt_cruise_played = false
     ToLissAN_cpt_descent_played = false
 
@@ -142,8 +142,8 @@ function ToLissAN_LoadDatarefsForEvents()
     ToLissAN_eng2_switch_on_prev = -1
     DataRef("ToLissAN_strobe_light_on","AirbusFBW/OHPLightSwitches","readonly",7)   -- Strobe light on (0=off,1=auto,2=on)
     ToLissAN_strobe_light_on_prev = -1
-    DataRef("ToLissAN_baro_std","AirbusFBW/BaroStdCapt","readonly")                 -- Baro (0=Selected Baro,1=Std Baro)
-    ToLissAN_baro_std_prev = -1
+    DataRef("ToLissAN_seat_belt_signs_on","AirbusFBW/SeatBeltSignsOn","readonly")   -- Seat belt sign on (0=off,1=on)
+    ToLissAN_seat_belt_signs_on_prev = -1
     DataRef("ToLissAN_altitude_captain","AirbusFBW/ALTCapt","readonly")             -- Altitude Captain side
     ToLissAN_altitude_captain_prev = -1
     --+======================================================================+
@@ -277,9 +277,13 @@ function ToLissAN_CheckDataref()
     ---------------
     -- DUTY FREE --
     ---------------
-    if ToLissAN_climb and not ToLissAN_duty_free_played and ToLissAN_10000_feet_reached then
-        play_sound(ToLissAN.duty_free)
-        ToLissAN_duty_free_played = true
+    if ToLissAN_climb and ToLissAN_10000_feet_reached and ToLissAN_seat_belt_signs_on_prev ~= ToLissAN_seat_belt_signs_on then
+        if ToLissAN_seat_belt_signs_on == 0 then
+            play_sound(ToLissAN.duty_free)
+        elseif ToLissAN_seat_belt_signs_on ~= 0 then
+            stop_sound(ToLissAN.duty_free)
+        end
+        ToLissAN_seat_belt_signs_on_prev = ToLissAN_seat_belt_signs_on
     end
 
     ------------------
@@ -302,7 +306,7 @@ function ToLissAN_CheckDataref()
     -- APPROACH REACH --
     --------------------
     if ToLissAN_approach and not ToLissAN_cpt_approach_played  then
-        play_sound(ToLissAN.cpt_approach)
+        play_sound(ToLissAN.cpt_landing)
         ToLissAN_cpt_approach_played = true
     end
 end

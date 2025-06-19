@@ -112,7 +112,7 @@ function ToLissAN_CheckDataref()
     if ToLissAN.isTakeoff and
        ToLissAN.Datarefs["IasCaptain"].ValueBefore ~= ToLissAN.Datarefs["IasCaptain"].Value then
 
-        if ToLissAN.Datarefs["IasCaptain"].Value > 100 then
+        if ToLissAN.Datarefs["IasCaptain"].Value > 95 then -- 100 kts
             ToLissAN.is100KtsReached = true
         end
         if ToLissAN.Datarefs["IasCaptain"].Value > ToLissAN.Datarefs["V1"].Value then
@@ -210,61 +210,80 @@ function ToLissAN_CheckDataref()
     -------------
     -- 100 KTS --
     -------------
-    if ToLissAN.isTakeoff and ToLissAN.is100KtsReached and not ToLissAN_100kts_played then
-        play_sound(ToLissAN.one_hundred_kts)
-        ToLissAN_100kts_played = true
+    if ToLissAN.isTakeoff and not
+       ToLissAN.CommonSounds[["100kts"]].played and
+       ToLissAN.is100KtsReached then
+
+        play_sound(ToLissAN.CommonSounds[["100kts"]].sound)
+        ToLissAN.CommonSounds[["100kts"]].played = true
     end
 
     --------
     -- V1 --
     --------
-    if ToLissAN.isTakeoff and ToLissAN.isV1Reached and not ToLissAN.Datarefs["V1"].Value_played then
-        play_sound(ToLissAN.V1)
-        ToLissAN.Datarefs["V1"].Value_played = true
+    if ToLissAN.isTakeoff and not
+       ToLissAN.CommonSounds["V1"].played and
+       ToLissAN.isV1Reached  then
+
+        play_sound(ToLissAN.CommonSounds["V1"].sound)
+        ToLissAN.CommonSounds["V1"].played = true
     end
 
     ------------------
     -- V2 OR ROTATE --
     ------------------
-    if ToLissAN.isTakeoff and ToLissAN.isV2Reached and not ToLissAN_rotate_played then
-        play_sound(ToLissAN.rotate)
-        ToLissAN_rotate_played = true
+    if ToLissAN.isTakeoff and not
+       ToLissAN.CommonSounds["Rotate"].played and
+       ToLissAN.isV2Reached  then
+
+        play_sound(ToLissAN.CommonSounds["Rotate"].sound)
+        ToLissAN.CommonSounds["Rotate"].played = true
     end
 
     ---------------
     -- DUTY FREE --
     ---------------
-    if ToLissAN.isClimb and ToLissAN.is10000FeetReached and ToLissAN_SeatBeltSignsOn_prev ~= ToLissAN_SeatBeltSignsOn then
-        if ToLissAN_SeatBeltSignsOn == 0 then
-            play_sound(ToLissAN.duty_free)
-        elseif ToLissAN_SeatBeltSignsOn ~= 0 then
-            stop_sound(ToLissAN.duty_free)
-        end
-        ToLissAN_SeatBeltSignsOn_prev = ToLissAN_SeatBeltSignsOn
+    if ToLissAN.isClimb and not
+       ToLissAN.CommonSounds["DutyFree"].played and
+       ToLissAN.is10000FeetReached and
+       ToLissAN.Datarefs["SeatBeltSignsOn"].ValueBefore ~= ToLissAN.Datarefs["SeatBeltSignsOn"].Value then
+
+        if ToLissAN.Datarefs["SeatBeltSignsOn"].Value == 0 then
+            play_sound(ToLissAN.CommonSounds["DutyFree"].sound)
+            ToLissAN.CommonSounds["DutyFree"].played = true
+
+        ToLissAN.Datarefs["SeatBeltSignsOn"].ValueBefore = ToLissAN.Datarefs["SeatBeltSignsOn"].Value
     end
 
     ------------------
     -- CRUISE REACH --
     ------------------
-    if ToLissAN.isCruise and not ToLissAN_cpt_cruise_played then
-        play_sound(ToLissAN.cpt_cruise)
-        ToLissAN_cpt_cruise_played = true
+    if ToLissAN.isCruise and not
+       ToLissAN.CommonSounds["CptCruiseLvl"].played then
+
+        play_sound(ToLissAN.CommonSounds["CptCruiseLvl"].sound)
+        ToLissAN.CommonSounds["CptCruiseLvl"].played = true
     end
 
     -------------------
     -- DESCENT REACH --
     -------------------
-    if ToLissAN.isDescent and not ToLissAN_cpt_descent_played  then
-        play_sound(ToLissAN.cpt_descent)
-        ToLissAN_cpt_descent_played = true
+    if ToLissAN.isDescent and not
+       ToLissAN.CommonSounds["CptDescent"].played  then
+
+        play_sound(ToLissAN.CommonSounds["CptDescent"].sound)
+        ToLissAN.CommonSounds["CptDescent"].played = true
+
     end
 
     --------------------
     -- APPROACH REACH --
     --------------------
-    if ToLissAN.isApproach and not ToLissAN_cpt_approach_played  then
-        play_sound(ToLissAN.cpt_landing)
-        ToLissAN_cpt_approach_played = true
+    if ToLissAN.isApproach and not
+       ToLissAN.CommonSounds["CptLanding"].played  then
+
+        play_sound(ToLissAN.CommonSounds["CptLanding"].sound)
+        ToLissAN.CommonSounds["CptLanding"].played = true
     end
 end
 

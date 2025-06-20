@@ -5,6 +5,9 @@
 --+==================================+
 local ToLissAN = {}
 
+ToLissAN.LogFilePath = SCRIPT_DIRECTORY .. "ToLissAN_Log.txt"
+os.remove(ToLissAN.LogFilePath)
+
 --+====================================================================+
 --|       T H E   F O L L O W I N G   A R E   H I G H   L E V E L      |
 --|                       F U N C T I O N S                            |
@@ -70,85 +73,88 @@ function ToLissAN_CheckDataref()
     -----------------------------------------------------
     --++++++++++++++++ MULTI CONDITION ++++++++++++++++--
     -----------------------------------------------------
-    if ToLissAN.Datarefs["TolissPhase"].ValueBefore ~= ToLissAN.Datarefs["TolissPhase"].Value then
+    if DATAREF_TolissPhaseBefore ~= DATAREF_TolissPhase then
 
-        if ToLissAN.Datarefs["TolissPhase"].Value == 0 then
+        if DATAREF_TolissPhase == 0 then
             ToLissAN.isPreflight = true
-        elseif ToLissAN.Datarefs["TolissPhase"].Value == 1 then
+        elseif DATAREF_TolissPhase == 1 then
             ToLissAN.isPreflight = false
             ToLissAN.isTakeoff = true
-        elseif ToLissAN.Datarefs["TolissPhase"].Value == 2 then
+        elseif DATAREF_TolissPhase == 2 then
             ToLissAN.isTakeoff = false
             ToLissAN.isClimb = true
-        elseif ToLissAN.Datarefs["TolissPhase"].Value == 3 then
+        elseif DATAREF_TolissPhase == 3 then
             ToLissAN.isClimb = false
             ToLissAN.isCruise = true
-        elseif ToLissAN.Datarefs["TolissPhase"].Value == 4 then
+        elseif DATAREF_TolissPhase == 4 then
             ToLissAN.isCruise = false
             ToLissAN.isDescent = true
-        elseif ToLissAN.Datarefs["TolissPhase"].Value == 5 then
+        elseif DATAREF_TolissPhase == 5 then
             ToLissAN.isDescent = false
             ToLissAN.isApproach = true
-        elseif ToLissAN.Datarefs["TolissPhase"].Value == 6 then
+        elseif DATAREF_TolissPhase == 6 then
             ToLissAN.isApproach = false
             ToLissAN.isLanding = true
         end
 
-        ToLissAN.Datarefs["TolissPhase"].ValueBefore = ToLissAN.Datarefs["TolissPhase"].Value
+        DATAREF_TolissPhaseBefore = DATAREF_TolissPhase
     end
 
     if ToLissAN.isPreflight and
-      (ToLissAN.Datarefs["Eng1SwitchOn"].ValueBefore ~= ToLissAN.Datarefs["Eng1SwitchOn"].Value or
-       ToLissAN.Datarefs["Eng2SwitchOn"].ValueBefore ~= ToLissAN.Datarefs["Eng2SwitchOn"].Value) then
+      (DATAREF_Eng1SwitchOnBefore ~= DATAREF_Eng1SwitchOn or
+       DATAREF_Eng2SwitchOnBefore ~= DATAREF_Eng2SwitchOn) then
 
-        if ToLissAN.Datarefs["Eng1SwitchOn"].Value == 1 or ToLissAN.Datarefs["Eng2SwitchOn"].Value == 1 then
+        if DATAREF_Eng1SwitchOn == 1 or DATAREF_Eng2SwitchOn == 1 then
             ToLissAN.isAirbusStarted = true
         end
 
-        ToLissAN.Datarefs["Eng1SwitchOn"].ValueBefore = ToLissAN.Datarefs["Eng1SwitchOn"].Value
-        ToLissAN.Datarefs["Eng2SwitchOn"].ValueBefore = ToLissAN.Datarefs["Eng2SwitchOn"].Value
+        DATAREF_Eng1SwitchOnBefore = DATAREF_Eng1SwitchOn
+        DATAREF_Eng2SwitchOnBefore = DATAREF_Eng2SwitchOn
     end
 
     if ToLissAN.isTakeoff and
-       ToLissAN.Datarefs["IasCaptain"].ValueBefore ~= ToLissAN.Datarefs["IasCaptain"].Value then
+       DATAREF_IasCaptainBefore ~= DATAREF_IasCaptain then
 
-        if ToLissAN.Datarefs["IasCaptain"].Value > 95 then -- 100 kts
+        if DATAREF_IasCaptain > 95 then -- 100 kts
             ToLissAN.is100KtsReached = true
         end
-        if ToLissAN.Datarefs["IasCaptain"].Value > ToLissAN.Datarefs["V1"].Value then
+        if DATAREF_IasCaptain > DATAREF_V1 then
             ToLissAN.isV1Reached = true
         end
-        if ToLissAN.Datarefs["IasCaptain"].Value > ToLissAN.Datarefs["V2"].Value then
+        if DATAREF_IasCaptain > DATAREF_V2 then
             ToLissAN.isV2Reached = true
         end
 
-        ToLissAN.Datarefs["IasCaptain"].ValueBefore = ToLissAN.Datarefs["IasCaptain"].Value
+        DATAREF_IasCaptainBefore = DATAREF_IasCaptain
     end
 
     if ToLissAN.isClimb and
-       ToLissAN.Datarefs["AltitudeCaptain"].ValueBefore ~= ToLissAN.Datarefs["AltitudeCaptain"].Value then
+       DATAREF_AltitudeCaptainBefore ~= DATAREF_AltitudeCaptain then
 
-        if ToLissAN.Datarefs["AltitudeCaptain"].Value > 10000 then
+        if DATAREF_AltitudeCaptain > 10000 then
             ToLissAN.is10000FeetReached = true
         end
 
-        ToLissAN.Datarefs["AltitudeCaptain"].ValueBefore = ToLissAN.Datarefs["AltitudeCaptain"].Value
+        DATAREF_AltitudeCaptainBefore = DATAREF_AltitudeCaptain
     end
 
     -----------------------
     -- BOARDING AMBIENCE --
     -----------------------
+    ToLissAN_Log("❌ P_F " .. tostring(ToLissAN.isPreflight))
+    ToLissAN_Log("❌ B_A " .. tostring(ToLissAN.CommonSounds["Boarding_Ambience"].played))
+    ToLissAN_Log("❌ E_P " .. DATAREF_ExtPwr)
     if ToLissAN.isPreflight and not
        ToLissAN.CommonSounds["Boarding_Ambience"].played and
-       ToLissAN.Datarefs["ExtPwr"].ValueBefore ~= ToLissAN.Datarefs["ExtPwr"].Value then
+       DATAREF_ExtPwrBefore ~= DATAREF_ExtPwr then
 
-        if ToLissAN.Datarefs["ExtPwr"].Value == 1 then
+        if DATAREF_ExtPwr == 1 then
             set_sound_gain(ToLissAN.CommonSounds["Boarding_Ambience"].sound, 0.10)
             play_sound(ToLissAN.CommonSounds["Boarding_Ambience"].sound)
             ToLissAN.CommonSounds["Boarding_Ambience"].played = true
         end
 
-        ToLissAN.Datarefs["ExtPwr"].ValueBefore = ToLissAN.Datarefs["ExtPwr"].Value
+        DATAREF_ExtPwrBefore = DATAREF_ExtPwr
     end
 
     -----------------------
@@ -156,14 +162,14 @@ function ToLissAN_CheckDataref()
     -----------------------
     if ToLissAN.isPreflight and not
        ToLissAN.CommonSounds["DoorsCrossCheck"].played and
-       ToLissAN.Datarefs["MainDoor"].ValueBefore ~= ToLissAN.Datarefs["MainDoor"].Value then
+       DATAREF_MainDoorBefore ~= DATAREF_MainDoor then
 
-        if ToLissAN.Datarefs["MainDoor"].Value == 0 then
+        if DATAREF_MainDoor == 0 then
             play_sound(ToLissAN.CommonSounds["DoorsCrossCheck"].sound)
             ToLissAN.CommonSounds["DoorsCrossCheck"].played = true
         end
 
-        ToLissAN.Datarefs["MainDoor"].ValueBefore = ToLissAN.Datarefs["MainDoor"].Value
+        DATAREF_MainDoorBefore = DATAREF_MainDoor
     end
 
     -----------------
@@ -171,14 +177,14 @@ function ToLissAN_CheckDataref()
     -----------------
     if ToLissAN.isPreflight and not
        ToLissAN.CommonSounds["CptWelcome"].played and
-       ToLissAN.Datarefs["BeaconLight"].ValueBefore ~= ToLissAN.Datarefs["BeaconLight"].Value then
+       DATAREF_BeaconLightBefore ~= DATAREF_BeaconLight then
 
-        if ToLissAN.Datarefs["BeaconLight"].Value == 1 then
+        if DATAREF_BeaconLight == 1 then
             play_sound(ToLissAN.CommonSounds["CptWelcome"].sound)
             ToLissAN.CommonSounds["CptWelcome"].played = true
         end
 
-        ToLissAN.Datarefs["BeaconLight"].ValueBefore = ToLissAN.Datarefs["BeaconLight"].Value
+        DATAREF_BeaconLightBefore = DATAREF_BeaconLight
     end
 
     --------------------
@@ -197,25 +203,25 @@ function ToLissAN_CheckDataref()
     -----------------
     if ToLissAN.isPreflight and not
        ToLissAN.CommonSounds["CptTakeoff"].played and
-       ToLissAN.Datarefs["StrobeLightOn"].ValueBefore ~= ToLissAN.Datarefs["StrobeLightOn"].Value then
+       DATAREF_StrobeLightOnBefore ~= DATAREF_StrobeLightOn then
 
-        if ToLissAN.Datarefs["StrobeLightOn"].Value == 2 then
+        if DATAREF_StrobeLightOn == 2 then
             play_sound(ToLissAN.CommonSounds["CptTakeoff"].sound)
             ToLissAN.CommonSounds["CptTakeoff"].played = true
         end
 
-        ToLissAN.Datarefs["StrobeLightOn"].ValueBefore = ToLissAN.Datarefs["StrobeLightOn"].Value
+        DATAREF_StrobeLightOnBefore = DATAREF_StrobeLightOn
     end
 
     -------------
     -- 100 KTS --
     -------------
     if ToLissAN.isTakeoff and not
-       ToLissAN.CommonSounds[["100kts"]].played and
+       ToLissAN.CommonSounds["100kts"].played and
        ToLissAN.is100KtsReached then
 
-        play_sound(ToLissAN.CommonSounds[["100kts"]].sound)
-        ToLissAN.CommonSounds[["100kts"]].played = true
+        play_sound(ToLissAN.CommonSounds["100kts"].sound)
+        ToLissAN.CommonSounds["100kts"].played = true
     end
 
     --------
@@ -246,13 +252,14 @@ function ToLissAN_CheckDataref()
     if ToLissAN.isClimb and not
        ToLissAN.CommonSounds["DutyFree"].played and
        ToLissAN.is10000FeetReached and
-       ToLissAN.Datarefs["SeatBeltSignsOn"].ValueBefore ~= ToLissAN.Datarefs["SeatBeltSignsOn"].Value then
+       DATAREF_SeatBeltSignsOnBefore ~= DATAREF_SeatBeltSignsOn then
 
-        if ToLissAN.Datarefs["SeatBeltSignsOn"].Value == 0 then
+        if DATAREF_SeatBeltSignsOn == 0 then
             play_sound(ToLissAN.CommonSounds["DutyFree"].sound)
             ToLissAN.CommonSounds["DutyFree"].played = true
+        end
 
-        ToLissAN.Datarefs["SeatBeltSignsOn"].ValueBefore = ToLissAN.Datarefs["SeatBeltSignsOn"].Value
+        DATAREF_SeatBeltSignsOnBefore = DATAREF_SeatBeltSignsOn
     end
 
     ------------------
@@ -318,33 +325,41 @@ function ToLissAN_LoadDatarefsForEvents()
 
     ToLissAN_Log("✅ ---ToLissAN_LoadDatarefsForEvents---")
 
-    local datarefs = {
-        ExtPwr               = { path = "AirbusFBW/ExtPowOHPArray", index = 0 },
-        MainDoor             = { path = "AirbusFBW/PaxDoorModeArray", index = 0 },
-        BeaconLight          = { path = "AirbusFBW/OHPLightSwitches", index = 0 },
-        Eng1SwitchOn         = { path = "AirbusFBW/ENG1MasterSwitch" },
-        Eng2SwitchOn         = { path = "AirbusFBW/ENG2MasterSwitch" },
-        StrobeLightOn        = { path = "AirbusFBW/OHPLightSwitches", index = 7 },
-        V1                   = { path = "toliss_airbus/performance/V1" },
-        V2                   = { path = "toliss_airbus/performance/V2" },
-        IasCaptain           = { path = "AirbusFBW/IASCapt" },
-        SeatBeltSignsOn      = { path = "AirbusFBW/SeatBeltSignsOn" },
-        AltitudeCaptain      = { path = "AirbusFBW/ALTCapt" },
-        TolissPhase          = { path = "AirbusFBW/APPhase", index = 0 },
-    }
+    DataRef("DATAREF_ExtPwr","AirbusFBW/ExtPowOHPArray","readonly",0)
+    DATAREF_ExtPwrBefore = -1
 
-    for name, def in pairs(datarefs) do
-        if def.index then
-            DataRef("ToLissAN_" .. name, def.path, "readonly", def.index)
-        else
-            DataRef("ToLissAN_" .. name, def.path, "readonly")
-        end
+    DataRef("DATAREF_MainDoor","AirbusFBW/PaxDoorModeArray","readonly",0)
+    DATAREF_MainDoorBefore = -1
 
-        ToLissAN.Datarefs[name] = {
-            Value = _G["ToLissAN_" .. name],
-            ValueBefore = -1
-        }
-    end
+    DataRef("DATAREF_BeaconLight","AirbusFBW/OHPLightSwitches","readonly",0)
+    DATAREF_BeaconLightBefore = -1
+
+    DataRef("DATAREF_Eng1SwitchOn","AirbusFBW/ENG1MasterSwitch","readonly")
+    DATAREF_Eng1SwitchOnBefore = -1
+
+    DataRef("DATAREF_Eng2SwitchOn","AirbusFBW/ENG2MasterSwitch","readonly")
+    DATAREF_Eng2SwitchOnBefore = -1
+
+    DataRef("DATAREF_StrobeLightOn","AirbusFBW/OHPLightSwitches","readonly",7)
+    DATAREF_StrobeLightOnBefore = -1
+
+    DataRef("DATAREF_V1","toliss_airbus/performance/V1","readonly")
+    DATAREF_V1Before = -1
+
+    DataRef("DATAREF_V2","toliss_airbus/performance/V2","readonly")
+    DATAREF_V2Before = -1
+
+    DataRef("DATAREF_IasCaptain","AirbusFBW/IASCapt","readonly")
+    DATAREF_IasCaptainBefore = -1
+
+    DataRef("DATAREF_SeatBeltSignsOn","AirbusFBW/SeatBeltSignsOn","readonly")
+    DATAREF_SeatBeltSignsOnBefore = -1
+
+    DataRef("DATAREF_AltitudeCaptain","AirbusFBW/ALTCapt","readonly")
+    DATAREF_AltitudeCaptainBefore = -1
+
+    DataRef("DATAREF_TolissPhase","AirbusFBW/APPhase","readonly")
+    DATAREF_TolissPhaseBefore = -1
 
     ToLissAN_Log("✅ Datarefs loaded")
 
@@ -454,9 +469,6 @@ function TolissAN_SetDefaultValues()
 
     ToLissAN_Log("✅ ---TolissAN_SetDefaultValues---")
 
-    ToLissAN.LogFilePath = SCRIPT_DIRECTORY .. "ToLissAN_Log"
-    os.remove(ToLissAN.LogFilePath)
-
     ToLissAN.SoundsPackPath = SCRIPT_DIRECTORY .. "ToLissAN_sounds"
 
     ToLissAN.ItemRefs = {} -- For the menu pointer
@@ -508,9 +520,9 @@ end
 --|       T H E   F O L L O W I N G   I S   T H E    M A I N           |
 --|                          S E C T I O N                             |
 --+====================================================================+
-if  string.lower(PLANE_AUTHOR) == "gliding kiwi" then
+if  (string.lower(PLANE_AUTHOR) == "gliding kiwi") then
 
-    ToLissAN_Log("🛫 Start ToLissAN program for Toliss "..PLANE_ICAO)
+    ToLissAN_Log("🛫 Start ToLissAN program for Toliss " .. PLANE_ICAO)
 
     ToLissAN_Initialization()
     ToLissAN_PrepareMenu()

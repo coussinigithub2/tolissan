@@ -223,6 +223,16 @@ function ToLissAN_CheckDataref()
         DATAREF_StrobeLightOnBefore = DATAREF_StrobeLightOn
     end
 
+    ----------------
+    -- THRUST SET --
+    ----------------
+    if ToLissAN.isTakeoff and not
+       ToLissAN.CommonSounds["ThrustSet"].played then
+
+        play_sound(ToLissAN.CommonSounds["ThrustSet"].sound)
+        ToLissAN.CommonSounds["ThrustSet"].played = true
+    end
+
     -------------
     -- 100 KTS --
     -------------
@@ -254,6 +264,56 @@ function ToLissAN_CheckDataref()
 
         play_sound(ToLissAN.CommonSounds["Rotate"].sound)
         ToLissAN.CommonSounds["Rotate"].played = true
+    end
+
+    --------------------
+    -- POSITIVE CLIMB --
+    --------------------
+    if ToLissAN.isTakeoff and not
+       ToLissAN.CommonSounds["PositiveClimb"].played and
+       DATAREF_VviFpmPilot > 500 then
+
+        play_sound(ToLissAN.CommonSounds["PositiveClimb"].sound)
+        ToLissAN.CommonSounds["PositiveClimb"].played = true
+    end
+
+    -------------
+    -- GEAR UP --
+    -------------
+    if ToLissAN.isTakeoff and
+       ToLissAN.CommonSounds["PositiveClimb"].played and not
+       ToLissAN.CommonSounds["GearUp"].played and
+       DATAREF_VviFpmPilot > 500 and
+       DATAREF_GearLever == 0 then
+
+        play_sound(ToLissAN.CommonSounds["GearUp"].sound)
+        ToLissAN.CommonSounds["GearUp"].played = true
+    end
+
+    -----------
+    -- FLAPS --
+    -----------
+    if ToLissAN.isTakeoff and
+       DATAREF_VviFpmPilot > 500 then
+
+        if DATAREF_FlapLeverRatio == TolissCP.Flaps_valid[1] then
+            if not ToLissAN.CommonSounds["SpeedCheckFlap0"].played then
+                play_sound(ToLissAN.CommonSounds["SpeedCheckFlap0"].sound)
+                ToLissAN.CommonSounds["SpeedCheckFlap0"].played = true
+            end
+
+        elseif DATAREF_FlapLeverRatio == TolissCP.Flaps_valid[2] then
+            if not ToLissAN.CommonSounds["SpeedCheckFlap1"].played then
+                play_sound(ToLissAN.CommonSounds["SpeedCheckFlap1"].sound)
+                ToLissAN.CommonSounds["SpeedCheckFlap1"].played = true
+            end
+
+        elseif DATAREF_FlapLeverRatio == TolissCP.Flaps_valid[3] then
+            if not ToLissAN.CommonSounds["SpeedCheckFlap2"].played then
+                play_sound(ToLissAN.CommonSounds["SpeedCheckFlap2"].sound)
+                ToLissAN.CommonSounds["SpeedCheckFlap2"].played = true
+            end
+        end
     end
 
     ---------------
@@ -353,6 +413,15 @@ function ToLissAN_LoadDatarefsForEvents()
     DataRef("DATAREF_StrobeLightOn","AirbusFBW/OHPLightSwitches","readonly",7)
     DATAREF_StrobeLightOnBefore = -1
 
+    DataRef("DATAREF_SeatBeltSignsOn","AirbusFBW/SeatBeltSignsOn","readonly")
+    DATAREF_SeatBeltSignsOnBefore = -1
+
+    DataRef("DATAREF_GearLever","AirbusFBW/GearLever","readonly")
+    DATAREF_GearLeverBefore = -1
+
+    DataRef("DATAREF_FlapLeverRatio","AirbusFBW/FlapLeverRatio","readonly")
+    DATAREF_DATAREF_FlapLeverRatioBefore = -1
+
     DataRef("DATAREF_V1","toliss_airbus/performance/V1","readonly")
     DATAREF_V1Before = -1
 
@@ -362,8 +431,8 @@ function ToLissAN_LoadDatarefsForEvents()
     DataRef("DATAREF_IasCaptain","AirbusFBW/IASCapt","readonly")
     DATAREF_IasCaptainBefore = -1
 
-    DataRef("DATAREF_SeatBeltSignsOn","AirbusFBW/SeatBeltSignsOn","readonly")
-    DATAREF_SeatBeltSignsOnBefore = -1
+    DataRef("DATAREF_VviFpmPilot","sim/cockpit2/gauges/indicators/vvi_fpm_pilot","readonly")
+    DATAREF_VviFpmPilotBefore = -1
 
     DataRef("DATAREF_AltitudeCaptain","AirbusFBW/ALTCapt","readonly")
     DATAREF_AltitudeCaptainBefore = -1
@@ -417,7 +486,7 @@ function ToLissAN_LoadCommonSoundsForCompany()
     local sounds = {
         Boarding_Ambience       = "Boarding_Ambience.wav",
         DoorsCrossCheck         = "DoorsCrossCheck.wav",
-        CptWelcome              = "CptWelcome.wav",
+        CptWelcome              = "CptWelcome.wav", -- after this, play SAFETY ANNONCE --
         CptTakeoff              = "CptTakeoff.wav",
         ThrustSet               = "ThrustSet.wav",
         ["100kts"]              = "100kts.wav",
@@ -488,6 +557,9 @@ function TolissAN_SetDefaultValues()
     ToLissAN.CommonSounds = {} -- List for Common sounds for company
     ToLissAN.SpecificSounds = {} -- List for Specific sounds for company
     ToLissAN.Datarefs = {} -- List of dataref for monitoring
+
+    -- flaps value
+    TolissCP.Flaps_valid = {0.00,0.25,0.50,0.75,1.00}
 
     --+=========================================+
     --| Boolean variables when reading datarefs |

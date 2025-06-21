@@ -283,7 +283,6 @@ function ToLissAN_CheckDataref()
     if ToLissAN.isTakeoff and
        ToLissAN.CommonSounds["PositiveClimb"].played and not
        ToLissAN.CommonSounds["GearUp"].played and
-       DATAREF_VviFpmPilot > 500 and
        DATAREF_GearLever == 0 then
 
         play_sound(ToLissAN.CommonSounds["GearUp"].sound)
@@ -294,8 +293,7 @@ function ToLissAN_CheckDataref()
     -- FLAPS TAKEOFF OR CLIMB  --
     -----------------------------
     if (ToLissAN.isTakeoff or ToLissAN.isClimb) and
-        DATAREF_FlapRequestPosBefore ~= DATAREF_FlapRequestPos
-        then
+        DATAREF_FlapRequestPosBefore ~= DATAREF_FlapRequestPos then
 
         ToLissAN.CommonSounds["SpeedCheckFlap0"].played = false
         ToLissAN.CommonSounds["SpeedCheckFlap1"].played = false
@@ -364,6 +362,62 @@ function ToLissAN_CheckDataref()
         play_sound(ToLissAN.CommonSounds["CptDescent"].sound)
         ToLissAN.CommonSounds["CptDescent"].played = true
 
+    end
+
+    --------------------------------
+    -- FLAPS DESCENT OR APPROACH  --
+    --------------------------------
+    if (ToLissAN.isDescent or ToLissAN.isApproach) and
+        DATAREF_FlapRequestPosBefore ~= DATAREF_FlapRequestPos  then
+
+        ToLissAN.CommonSounds["SpeedCheckFlap0"].played = false
+        ToLissAN.CommonSounds["SpeedCheckFlap1"].played = false
+        ToLissAN.CommonSounds["SpeedCheckFlap2"].played = false
+        ToLissAN.CommonSounds["SpeedCheckFlap3"].played = false
+        ToLissAN.CommonSounds["SpeedCheckFlapFull"].played = false
+
+        if DATAREF_FlapRequestPos == -1 then
+            if not ToLissAN.CommonSounds["SpeedCheckFlap0"].played then
+                play_sound(ToLissAN.CommonSounds["SpeedCheckFlap0"].sound)
+                ToLissAN.CommonSounds["SpeedCheckFlap0"].played = true
+            end
+
+        elseif DATAREF_FlapRequestPos == 1 then
+            if not ToLissAN.CommonSounds["SpeedCheckFlap1"].played then
+                play_sound(ToLissAN.CommonSounds["SpeedCheckFlap1"].sound)
+                ToLissAN.CommonSounds["SpeedCheckFlap1"].played = true
+            end
+
+        elseif DATAREF_FlapRequestPos == 2 then
+            if not ToLissAN.CommonSounds["SpeedCheckFlap2"].played then
+                play_sound(ToLissAN.CommonSounds["SpeedCheckFlap2"].sound)
+                ToLissAN.CommonSounds["SpeedCheckFlap2"].played = true
+            end
+
+        elseif DATAREF_FlapRequestPos == 3 then
+            if not ToLissAN.CommonSounds["SpeedCheckFlap3"].played then
+                play_sound(ToLissAN.CommonSounds["SpeedCheckFlap3"].sound)
+                ToLissAN.CommonSounds["SpeedCheckFlap3"].played = true
+            end
+
+        elseif DATAREF_FlapRequestPos == 4 then
+            if not ToLissAN.CommonSounds["SpeedCheckFlapFull"].played then
+                play_sound(ToLissAN.CommonSounds["SpeedCheckFlapFull"].sound)
+                ToLissAN.CommonSounds["SpeedCheckFlapFull"].played = true
+            end
+        end
+        DATAREF_FlapRequestPosBefore = DATAREF_FlapRequestPos
+    end
+
+    ---------------
+    -- GEAR DOWN --
+    ---------------
+    if (ToLissAN.isDescent or ToLissAN.isApproach) and not
+       ToLissAN.CommonSounds["GearDown"].played and
+       DATAREF_GearLever == 1 then
+
+        play_sound(ToLissAN.CommonSounds["GearDown"].sound)
+        ToLissAN.CommonSounds["GearDown"].played = true
     end
 
     --------------------
@@ -619,7 +673,11 @@ if  (string.lower(PLANE_AUTHOR) == "gliding kiwi") then
     ToLissAN_Log("🛫 Start ToLissAN program for Toliss " .. PLANE_ICAO)
 
     ToLissAN_Initialization()
-    ToLissAN_PrepareMenu()
+
+    if LUA_RUN == 1 then
+        ToLissAN_PrepareMenu()
+    end
+
     do_every_frame("ToLissAN_CheckDataref()")
 
 end

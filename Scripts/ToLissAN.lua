@@ -455,6 +455,19 @@ function ToLissAN_PrepareMenu()
 
 end
 
+--++----------------------------------------------------------------------++
+--|| ToLissAN_DestroyMenu() Destroy menu for Company selection and sounds ||
+--++----------------------------------------------------------------------++
+function ToLissAN_DestroyMenu()
+
+    ToLissAN_Log("✅ ---ToLissAN_DestroyMenu---")
+
+    ToLissAN.XPLM.XPLMDestroyMenu(ToLissAN.SubMenu)
+
+    ToLissAN_Log("✅ Menu destroyed")
+
+end
+
 --++------------------------------------------------------------++
 --|| ToLissAN_LoadDatarefsForEvents() Load datarefs for events  ||
 --++------------------------------------------------------------++
@@ -603,6 +616,7 @@ function ToLissAN_IncludeResourcesForMenu()
         int XPLMAppendMenuItem(void* menu, const char* itemName, void* itemRef, int deprecated);
         XPLMMenuID XPLMCreateMenu(const char* name, void* parentMenu, int parentItem, XPLMMenuHandler_f handler, void* ref);
         void* XPLMFindPluginsMenu(void);
+        typedef void* XPLMDestroyMenu(void* parentMenu);
     ]]
     ToLissAN.XPLM = ToLissAN.FFI.load("XPLM_64")
 
@@ -674,9 +688,11 @@ if  (string.lower(PLANE_AUTHOR) == "gliding kiwi") then
 
     ToLissAN_Initialization()
 
-    if LUA_RUN == 1 then
-        ToLissAN_PrepareMenu()
+    if LUA_RUN > 1 then
+        ToLissAN_DestroyMenu()
     end
+
+    ToLissAN_PrepareMenu()
 
     do_every_frame("ToLissAN_CheckDataref()")
 

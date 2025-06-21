@@ -455,14 +455,16 @@ function ToLissAN_PrepareMenu()
 
 end
 
---++----------------------------------------------------------------------++
---|| ToLissAN_DestroyMenu() Destroy menu for Company selection and sounds ||
---++----------------------------------------------------------------------++
+--++----------------------------------------------------------++
+--|| ToLissAN_DestroyMenu() Destroy all menu for this program ||
+--++----------------------------------------------------------++
 function ToLissAN_DestroyMenu()
 
     ToLissAN_Log("✅ ---ToLissAN_DestroyMenu---")
 
-    ToLissAN.XPLM.XPLMDestroyMenu(ToLissAN.SubMenu)
+    ToLissAN.XPLM.XPLMClearAllMenuItems(ToLissAN.PluginsMenu)
+    ToLissAN.XPLM.XPLMDestroyMenu(ToLissAN.SubMenu)       -- détruit le menu proprement
+    ToLissAN.SubMenu = nil
 
     ToLissAN_Log("✅ Menu destroyed")
 
@@ -616,7 +618,8 @@ function ToLissAN_IncludeResourcesForMenu()
         int XPLMAppendMenuItem(void* menu, const char* itemName, void* itemRef, int deprecated);
         XPLMMenuID XPLMCreateMenu(const char* name, void* parentMenu, int parentItem, XPLMMenuHandler_f handler, void* ref);
         void* XPLMFindPluginsMenu(void);
-        typedef void* XPLMDestroyMenu(void* parentMenu);
+        void XPLMDestroyMenu(XPLMMenuID inMenuID);
+        void XPLMClearAllMenuItems(XPLMMenuID inMenuID);
     ]]
     ToLissAN.XPLM = ToLissAN.FFI.load("XPLM_64")
 
@@ -687,13 +690,9 @@ if  (string.lower(PLANE_AUTHOR) == "gliding kiwi") then
     ToLissAN_Log("🛫 Start ToLissAN program for Toliss " .. PLANE_ICAO)
 
     ToLissAN_Initialization()
-
-    if LUA_RUN > 1 then
-        ToLissAN_DestroyMenu()
-    end
-
     ToLissAN_PrepareMenu()
 
     do_every_frame("ToLissAN_CheckDataref()")
 
+    do_on_exit("ToLissAN_DestroyMenu()")
 end

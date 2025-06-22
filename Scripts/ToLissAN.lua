@@ -300,7 +300,7 @@ function ToLissAN_CheckDataref()
         ToLissAN.CommonSounds["SpeedCheckFlap2"].played = false
         ToLissAN.CommonSounds["SpeedCheckFlap3"].played = false
 
-        if DATAREF_FlapRequestPos == -1 then
+        if DATAREF_FlapRequestPos == 0 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap0"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap0"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlap0"].played = true
@@ -376,7 +376,7 @@ function ToLissAN_CheckDataref()
         ToLissAN.CommonSounds["SpeedCheckFlap3"].played = false
         ToLissAN.CommonSounds["SpeedCheckFlapFull"].played = false
 
-        if DATAREF_FlapRequestPos == -1 then
+        if DATAREF_FlapRequestPos == 0 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap0"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap0"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlap0"].played = true
@@ -428,6 +428,28 @@ function ToLissAN_CheckDataref()
 
         play_sound(ToLissAN.CommonSounds["CptLanding"].sound)
         ToLissAN.CommonSounds["CptLanding"].played = true
+    end
+
+    -------------------
+    -- REVERSE GREEN --
+    -------------------
+    if ToLissAN.isLanding and not
+       ToLissAN.CommonSounds["ReverseGreen"].played and
+       DATAREF_ThrustReverserDeployRatio > 0.99 then
+
+        play_sound(ToLissAN.CommonSounds["ReverseGreen"].sound)
+        ToLissAN.CommonSounds["ReverseGreen"].played = true
+    end
+
+    ------------
+    -- 70 KTS --
+    ------------
+    if ToLissAN.isLanding and not
+       ToLissAN.CommonSounds["70kts"].played and
+       ToLissAN.is100KtsReached then
+
+        play_sound(ToLissAN.CommonSounds["70kts"].sound)
+        ToLissAN.CommonSounds["70kts"].played = true
     end
 end
 
@@ -502,7 +524,7 @@ function ToLissAN_LoadDatarefsForEvents()
     DATAREF_GearLeverBefore = -1
 
     DataRef("DATAREF_FlapRequestPos","AirbusFBW/FlapRequestPos","readonly")
-    DATAREF_DATAREF_FlapRequestPosBefore = -9 -- not set
+    DATAREF_DATAREF_FlapRequestPosBefore = -1
 
     DataRef("DATAREF_V1","toliss_airbus/performance/V1","readonly")
     DATAREF_V1Before = -1
@@ -518,6 +540,9 @@ function ToLissAN_LoadDatarefsForEvents()
 
     DataRef("DATAREF_AltitudeCaptain","AirbusFBW/ALTCapt","readonly")
     DATAREF_AltitudeCaptainBefore = -1
+
+    DataRef("DATAREF_ThrustReverserDeployRatio","sim/flightmodel2/engines/thrust_reverser_deploy_ratio","readonly",0)
+    DATAREF_ThrustReverserDeployRatioBefore = -1
 
     DataRef("DATAREF_TolissPhase","AirbusFBW/APPhase","readonly")
     DATAREF_TolissPhaseBefore = -1

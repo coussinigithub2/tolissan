@@ -101,8 +101,13 @@ function ToLissAN_CheckDataref()
             ToLissAN_Log("ℹ️ isApproach = " .. tostring(ToLissAN.isApproach))
         elseif DATAREF_TolissPhase == 6 then
             ToLissAN.isApproach = false
-            ToLissAN.isLanding = true
-            ToLissAN_Log("ℹ️ isLanding = " .. tostring(ToLissAN.isLanding))
+            ToLissAN.isGoAround = true
+            ToLissAN_Log("ℹ️ isGoAround = " .. tostring(ToLissAN.isGoAround))
+        elseif DATAREF_TolissPhase == 7 then
+            ToLissAN.isApproach = false
+            ToLissAN.isGoAround = false
+            ToLissAN.isDone = true
+            ToLissAN_Log("ℹ️ isLanding = " .. tostring(ToLissAN.isDone))
         end
 
         DATAREF_TolissPhaseBefore = DATAREF_TolissPhase
@@ -230,7 +235,7 @@ function ToLissAN_CheckDataref()
         --------------------------------------------
         -- Take the flaps set position at takeoff --
         --------------------------------------------
-        DATAREF_FlapRequestPosBefore = DATAREF_FlapRequestPos
+        DATAREF_FlapLeverRatioBefore = DATAREF_FlapLeverRatio
     end
 
     -------------
@@ -293,38 +298,38 @@ function ToLissAN_CheckDataref()
     -- FLAPS TAKEOFF OR CLIMB  --
     -----------------------------
     if (ToLissAN.isTakeoff or ToLissAN.isClimb) and
-        DATAREF_FlapRequestPosBefore ~= DATAREF_FlapRequestPos then
+        DATAREF_FlapLeverRatioBefore ~= DATAREF_FlapLeverRatio then
 
         ToLissAN.CommonSounds["SpeedCheckFlap0"].played = false
         ToLissAN.CommonSounds["SpeedCheckFlap1"].played = false
         ToLissAN.CommonSounds["SpeedCheckFlap2"].played = false
         ToLissAN.CommonSounds["SpeedCheckFlap3"].played = false
 
-        if DATAREF_FlapRequestPos == 0 then
+        if DATAREF_FlapLeverRatio == 0 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap0"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap0"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlap0"].played = true
             end
 
-        elseif DATAREF_FlapRequestPos == 1 then
+        elseif DATAREF_FlapLeverRatio == 0.25 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap1"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap1"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlap1"].played = true
             end
 
-        elseif DATAREF_FlapRequestPos == 2 then
+        elseif DATAREF_FlapLeverRatio == 0.5 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap2"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap2"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlap2"].played = true
             end
 
-        elseif DATAREF_FlapRequestPos == 3 then
+        elseif DATAREF_FlapLeverRatio == 0.75 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap3"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap3"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlap3"].played = true
             end
         end
-        DATAREF_FlapRequestPosBefore = DATAREF_FlapRequestPos
+        DATAREF_FlapLeverRatioBefore = DATAREF_FlapLeverRatio
     end
 
     ---------------
@@ -368,7 +373,7 @@ function ToLissAN_CheckDataref()
     -- FLAPS DESCENT OR APPROACH  --
     --------------------------------
     if (ToLissAN.isDescent or ToLissAN.isApproach) and
-        DATAREF_FlapRequestPosBefore ~= DATAREF_FlapRequestPos  then
+        DATAREF_FlapLeverRatioBefore ~= DATAREF_FlapLeverRatio  then
 
         ToLissAN.CommonSounds["SpeedCheckFlap0"].played = false
         ToLissAN.CommonSounds["SpeedCheckFlap1"].played = false
@@ -376,37 +381,37 @@ function ToLissAN_CheckDataref()
         ToLissAN.CommonSounds["SpeedCheckFlap3"].played = false
         ToLissAN.CommonSounds["SpeedCheckFlapFull"].played = false
 
-        if DATAREF_FlapRequestPos == 0 then
+        if DATAREF_FlapLeverRatio == 0 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap0"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap0"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlap0"].played = true
             end
 
-        elseif DATAREF_FlapRequestPos == 1 then
+        elseif DATAREF_FlapLeverRatio == 0.25 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap1"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap1"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlap1"].played = true
             end
 
-        elseif DATAREF_FlapRequestPos == 2 then
+        elseif DATAREF_FlapLeverRatio == 0.5 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap2"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap2"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlap2"].played = true
             end
 
-        elseif DATAREF_FlapRequestPos == 3 then
+        elseif DATAREF_FlapLeverRatio == 0.75 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap3"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap3"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlap3"].played = true
             end
 
-        elseif DATAREF_FlapRequestPos == 4 then
+        elseif DATAREF_FlapLeverRatio == 1 then
             if not ToLissAN.CommonSounds["SpeedCheckFlapFull"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlapFull"].sound)
                 ToLissAN.CommonSounds["SpeedCheckFlapFull"].played = true
             end
         end
-        DATAREF_FlapRequestPosBefore = DATAREF_FlapRequestPos
+        DATAREF_FlapLeverRatioBefore = DATAREF_FlapLeverRatio
     end
 
     ---------------
@@ -433,20 +438,35 @@ function ToLissAN_CheckDataref()
     -------------------
     -- REVERSE GREEN --
     -------------------
-    if ToLissAN.isLanding and not
+    if ToLissAN.isApproach and not
        ToLissAN.CommonSounds["ReverseGreen"].played and
-       DATAREF_ThrustReverserDeployRatio > 0.99 then
+       DATAREF_Engine1ReverserDeloyment == 1 and
+       DATAREF_Engine2ReverserDeloyment == 1 then
 
         play_sound(ToLissAN.CommonSounds["ReverseGreen"].sound)
         ToLissAN.CommonSounds["ReverseGreen"].played = true
     end
 
+    -----------
+    -- DECEL --
+    -----------
+    if ToLissAN.isApproach and not
+       ToLissAN.CommonSounds["Decel"].played and
+       ToLissAN.CommonSounds["ReverseGreen"].played and
+      (DATAREF_AutoBrkLo == 2 or
+       DATAREF_AutoBrkMed == 2) then
+
+        play_sound(ToLissAN.CommonSounds["Decel"].sound)
+        ToLissAN.CommonSounds["Decel"].played = true
+    end
+
     ------------
     -- 70 KTS --
     ------------
-    if ToLissAN.isLanding and not
+    if ToLissAN.isApproach and not
        ToLissAN.CommonSounds["70kts"].played and
-       ToLissAN.is100KtsReached then
+       DATAREF_RadioAltimeterHeightPilot < 3 and
+       DATAREF_IasCaptain < 70 then
 
         play_sound(ToLissAN.CommonSounds["70kts"].sound)
         ToLissAN.CommonSounds["70kts"].played = true
@@ -524,13 +544,19 @@ function ToLissAN_LoadDatarefsForEvents()
     DATAREF_GearLeverBefore = -1
 
     DataRef("DATAREF_FlapRequestPos","AirbusFBW/FlapRequestPos","readonly")
-    DATAREF_DATAREF_FlapRequestPosBefore = -1
+    DATAREF_FlapRequestPosBefore = -1
+
+    DataRef("DATAREF_FlapLeverRatio","AirbusFBW/FlapLeverRatio","readonly")
+    DATAREF_FlapLeverRatioBefore = -1
 
     DataRef("DATAREF_V1","toliss_airbus/performance/V1","readonly")
     DATAREF_V1Before = -1
 
     DataRef("DATAREF_V2","toliss_airbus/performance/V2","readonly")
     DATAREF_V2Before = -1
+
+    DataRef("DATAREF_RadioAltimeterHeightPilot","sim/cockpit2/gauges/indicators/radio_altimeter_height_ft_pilot","readonly")
+    DATAREF_RadioAltimeterHeightPilotBefore = -1
 
     DataRef("DATAREF_IasCaptain","AirbusFBW/IASCapt","readonly")
     DATAREF_IasCaptainBefore = -1
@@ -541,8 +567,17 @@ function ToLissAN_LoadDatarefsForEvents()
     DataRef("DATAREF_AltitudeCaptain","AirbusFBW/ALTCapt","readonly")
     DATAREF_AltitudeCaptainBefore = -1
 
-    DataRef("DATAREF_ThrustReverserDeployRatio","sim/flightmodel2/engines/thrust_reverser_deploy_ratio","readonly",0)
-    DATAREF_ThrustReverserDeployRatioBefore = -1
+    DataRef("DATAREF_Engine1ReverserDeloyment","AirbusFBW/EngineReverserDeloymentArray","readonly",0)
+    DATAREF_Engine1ReverserDeloymentBefore = -1
+
+    DataRef("DATAREF_Engine2ReverserDeloyment","AirbusFBW/EngineReverserDeloymentArray","readonly",1)
+    DATAREF_Engine2ReverserDeloymentBefore = -1
+
+    DataRef("DATAREF_AutoBrkLo","AirbusFBW/AutoBrkLo","readonly",1)
+    DATAREF_AutoBrkLoBefore = -1
+
+    DataRef("DATAREF_AutoBrkMed","AirbusFBW/AutoBrkMed","readonly",1)
+    DATAREF_AutoBrkMedBefore = -1
 
     DataRef("DATAREF_TolissPhase","AirbusFBW/APPhase","readonly")
     DATAREF_TolissPhaseBefore = -1
@@ -611,7 +646,6 @@ function ToLissAN_LoadCommonSoundsForCompany()
         CptDescent              = "CptDescent.wav",
         CptLanding              = "CptLanding.wav",
         GearDown                = "GearDown.wav",
-        Spoilers                = "Spoilers.wav",
         ReverseGreen            = "ReverseGreen.wav",
         Decel                   = "Decel.wav",
         ["70kts"]               = "70kts.wav"
@@ -677,7 +711,8 @@ function TolissAN_SetDefaultValues()
     ToLissAN.isCruise = false
     ToLissAN.isDescent = false
     ToLissAN.isApproach = false
-    ToLissAN.isLanding = false
+    ToLissAN.isGoAround = false
+    ToLissAN.isDone = false
     -- FOR EVENTS REACHED
     ToLissAN.isAirbusStarted = false
     ToLissAN.is100KtsReached = false

@@ -66,6 +66,13 @@ function ToLissAN_MenuCallback(menuRef, itemRef)
 
 end
 
+--++--------------------------------------------------------------++
+--|| M_UTILITIES.SetTimer() Return a time limit value for a timer ||
+--++--------------------------------------------------------------++
+function ToLissAN_SetTimer(time)
+    return UTILITIES_TotalRunningTimeSec + time
+end
+
 --++-------------------------------------------------------------++
 --|| ToLissAN_CheckDataref() Monitoring dataref for sounds event ||
 --++-------------------------------------------------------------++
@@ -438,6 +445,7 @@ function ToLissAN_CheckDataref()
     -------------------
     -- REVERSE GREEN --
     -------------------
+    --[[
     if ToLissAN.isApproach and not
        ToLissAN.CommonSounds["ReverseGreen"].played and
        DATAREF_Engine1ReverserDeloyment == 1 and
@@ -446,15 +454,33 @@ function ToLissAN_CheckDataref()
         play_sound(ToLissAN.CommonSounds["ReverseGreen"].sound)
         ToLissAN.CommonSounds["ReverseGreen"].played = true
     end
+    ]]
+
+    --------------
+    -- SPOILERS --
+    --------------
+    if ToLissAN.isApproach and not
+       ToLissAN.CommonSounds["Spoilers"].played and
+       DATAREF_Spoiler0 == 1 and
+       DATAREF_Spoiler1 == 1 then
+
+        play_sound(ToLissAN.CommonSounds["Spoilers"].sound)
+        ToLissAN.CommonSounds["Spoilers"].played = true
+
+        if DATAREF_AutoBrkLo == 1 then
+            ToLissAN.TimerSpoilers = ToLissAN_SetTimer(4)
+        elseif DATAREF_AutoBrkMed == 1 then
+            ToLissAN.TimerSpoilers = ToLissAN_SetTimer(2)
+        end
+    end
 
     -----------
     -- DECEL --
     -----------
     if ToLissAN.isApproach and not
        ToLissAN.CommonSounds["Decel"].played and
-       ToLissAN.CommonSounds["ReverseGreen"].played and
-      (DATAREF_AutoBrkLo == 2 or
-       DATAREF_AutoBrkMed == 2) then
+       ToLissAN.CommonSounds["Spoilers"].played and
+       UTILITIES_TotalRunningTimeSec > ToLissAN.TimerSpoilers then
 
         play_sound(ToLissAN.CommonSounds["Decel"].sound)
         ToLissAN.CommonSounds["Decel"].played = true
@@ -519,6 +545,8 @@ function ToLissAN_LoadDatarefsForEvents()
 
     ToLissAN_Log("✅ ---ToLissAN_LoadDatarefsForEvents---")
 
+    DataRef("UTILITIES_TotalRunningTimeSec","sim/time/total_running_time_sec","readonly")
+
     DataRef("DATAREF_ExtPwr","AirbusFBW/ExtPowOHPArray","readonly",0)
     DATAREF_ExtPwrBefore = -1
 
@@ -572,6 +600,12 @@ function ToLissAN_LoadDatarefsForEvents()
 
     DataRef("DATAREF_Engine2ReverserDeloyment","AirbusFBW/EngineReverserDeloymentArray","readonly",1)
     DATAREF_Engine2ReverserDeloymentBefore = -1
+
+    DataRef("DATAREF_Spoiler0","AirbusFBW/SDSpoilerArray","readonly",0)
+    DATAREF_DATAREF_Spoiler0Before = -1
+
+    DataRef("DATAREF_Spoiler1","AirbusFBW/SDSpoilerArray","readonly",1)
+    DATAREF_DATAREF_Spoiler1Before = -1
 
     DataRef("DATAREF_AutoBrkLo","AirbusFBW/AutoBrkLo","readonly",1)
     DATAREF_AutoBrkLoBefore = -1
@@ -647,7 +681,8 @@ function ToLissAN_LoadCommonSoundsForCompany()
         CptLanding              = "CptLanding.wav",
         GearDown                = "GearDown.wav",
         ReverseGreen            = "ReverseGreen.wav",
-        Decel                   = "Decel.wav",
+        Spoilers                = "SpoilersLoad.wav",
+        Decel                   = "DecelLoud.wav",
         ["70kts"]               = "70kts.wav"
     }
 
@@ -700,6 +735,8 @@ function TolissAN_SetDefaultValues()
     ToLissAN.CommonSounds = {} -- List for Common sounds for company
     ToLissAN.SpecificSounds = {} -- List for Specific sounds for company
     ToLissAN.Datarefs = {} -- List of dataref for monitoring
+
+    ToLissAN.TimerSpoilers = 0 -- Timer for Spoilers
 
     --+=========================================+
     --| Boolean variables when reading datarefs |

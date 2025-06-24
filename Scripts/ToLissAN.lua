@@ -28,6 +28,44 @@ function ToLissAN_Log(msg)
 
 end
 
+--++-------------------------------------------------------------------------++
+--|| ToLissAN_CreateCompanyCombo() Create and manage compagny drop down list ||
+--++-------------------------------------------------------------------------++
+function ToLissAN_CreateCompanyCombo(wnd, x, y)
+
+    if imgui.BeginCombo("Company", ToLissAN.CompanyList[ToLissAN.Company]) then
+
+        for i = 1, #ToLissAN.CompanyList do
+            if imgui.Selectable(ToLissAN.CompanyList[i], ToLissAN.Company == i) then
+                ToLissAN.Company = i
+            end
+        end
+
+        ToLissAN.SelectedCompanyName = ToLissAN.CompanyList[ToLissAN.Company]
+        ToLissAN_LoadSpecificSoundsForCompany(ToLissAN.SelectedCompanyName)
+
+        imgui.EndCombo()
+    end
+
+end
+
+--++-------------------------------------------------------------------++
+--|| ToLissAN_CloseCompanySelectionWindow() Close the selection window ||
+--++-------------------------------------------------------------------++
+function ToLissAN_CloseCompanySelectionWindow(wnd)
+end
+
+--++-----------------------------------------------------------------------------++
+--|| ToLissAN_ShowSelectedCompany() Show the selected company in the bottom left ||
+--++-----------------------------------------------------------------------------++
+function ToLissAN_ShowSelectedCompany()
+
+    local pos = 0
+
+    pos = big_bubble(20, pos, "Selected company : " .. ToLissAN.CompanyList[ToLissAN.Company])
+
+end
+
 --++----------------------------------------------------------------------++
 --|| ToLissAN_GetCompanyList() Get the company list from the sound folder ||
 --++----------------------------------------------------------------------++
@@ -39,30 +77,14 @@ function ToLissAN_GetCompanyList()
 
     if file then
         for line in file:lines() do
-            table.insert(list, line)
+            if line ~= "Common" then
+                table.insert(list, line)
+            end
         end
         file:close()
     end
 
     return list
-
-end
-
---++--------------------------------------------------------------------++
---|| ToLissAN_MenuCallback() When a user select a company from the menu ||
---++--------------------------------------------------------------------++
-function ToLissAN_MenuCallback(menuRef, itemRef)
-
-    ToLissAN_Log("✅ ---ToLissAN_MenuCallback---")
-
-    if itemRef ~= nil then
-        local name = ToLissAN.FFI.string(ToLissAN.FFI.cast("const char*", itemRef))
-        ToLissAN.SelectedCompanyName = name
-        ToLissAN_Log("✅ Selected company : " .. name)
-        ToLissAN_LoadSpecificSoundsForCompany(ToLissAN.SelectedCompanyName)
-    else
-        ToLissAN_Log("❌ itemRef is nil")
-    end
 
 end
 
@@ -499,45 +521,6 @@ function ToLissAN_CheckDataref()
     end
 end
 
---++---------------------------------------------------------------------++
---|| ToLissAN_PrepareMenu() Create menu for Company selection and sounds ||
---++---------------------------------------------------------------------++
-function ToLissAN_PrepareMenu()
-
-    ToLissAN_Log("✅ ---ToLissAN_PrepareMenu---")
-
-    ToLissAN.C_MenuCallback = ToLissAN.FFI.cast("XPLMMenuHandler_f", ToLissAN_MenuCallback)
-    ToLissAN.PluginsMenu = ToLissAN.XPLM.XPLMFindPluginsMenu()
-    ToLissAN.TopItemIndex = ToLissAN.XPLM.XPLMAppendMenuItem(ToLissAN.PluginsMenu, "ToLissCo", nil, 0)
-    ToLissAN.SubMenu = ToLissAN.XPLM.XPLMCreateMenu("ToLissCo", ToLissAN.PluginsMenu, ToLissAN.TopItemIndex, ToLissAN.C_MenuCallback, nil)
-
-    for _, company in ipairs(ToLissAN_GetCompanyList()) do
-        if company ~= "Common" then
-            local ptr = ToLissAN.FFI.new("char[?]", #company + 1, company)
-            ToLissAN.ItemRefs[company] = ptr
-            ToLissAN.XPLM.XPLMAppendMenuItem(ToLissAN.SubMenu, company, ptr, 0)
-        end
-    end
-
-    ToLissAN_Log("✅ Menu created")
-
-end
-
---++----------------------------------------------------------++
---|| ToLissAN_DestroyMenu() Destroy all menu for this program ||
---++----------------------------------------------------------++
-function ToLissAN_DestroyMenu()
-
-    ToLissAN_Log("✅ ---ToLissAN_DestroyMenu---")
-
-    ToLissAN.XPLM.XPLMClearAllMenuItems(ToLissAN.PluginsMenu)
-    ToLissAN.XPLM.XPLMDestroyMenu(ToLissAN.SubMenu)       -- détruit le menu proprement
-    ToLissAN.SubMenu = nil
-
-    ToLissAN_Log("✅ Menu destroyed")
-
-end
-
 --++------------------------------------------------------------++
 --|| ToLissAN_LoadDatarefsForEvents() Load datarefs for events  ||
 --++------------------------------------------------------------++
@@ -698,29 +681,6 @@ function ToLissAN_LoadCommonSoundsForCompany()
 
 end
 
---++------------------------------------------------------------------------++
---|| ToLissAN_IncludeResourcesForMenu() Include resources for menu creation ||
---++------------------------------------------------------------------------++
-function ToLissAN_IncludeResourcesForMenu()
-
-    ToLissAN_Log("✅ ---ToLissAN_IncludeResourcesForMenu---")
-
-    ToLissAN.FFI = require("ffi")
-    ToLissAN.FFI.cdef[[
-        typedef void* XPLMMenuID;
-        typedef void (*XPLMMenuHandler_f)(void*, void*);
-        int XPLMAppendMenuItem(void* menu, const char* itemName, void* itemRef, int deprecated);
-        XPLMMenuID XPLMCreateMenu(const char* name, void* parentMenu, int parentItem, XPLMMenuHandler_f handler, void* ref);
-        void* XPLMFindPluginsMenu(void);
-        void XPLMDestroyMenu(XPLMMenuID inMenuID);
-        void XPLMClearAllMenuItems(XPLMMenuID inMenuID);
-    ]]
-    ToLissAN.XPLM = ToLissAN.FFI.load("XPLM_64")
-
-    ToLissAN_Log("✅ Resources FFI definitions loaded")
-
-end
-
 --++-----------------------------------------------------------------++
 --|| TolissAN_SetDefaultValues() Set default values for this program ||
 --++-----------------------------------------------------------------++
@@ -730,8 +690,9 @@ function TolissAN_SetDefaultValues()
 
     ToLissAN.SoundsPackPath = SCRIPT_DIRECTORY .. "ToLissAN_sounds"
 
-    ToLissAN.ItemRefs = {} -- For the menu pointer
     ToLissAN.SelectedCompanyName = "AirCanada" -- Default Company for sound
+    ToLissAN.Company = 1 -- For the selected drop down list
+    ToLissAN.CompanyList = {} -- For the selected drop down list
     ToLissAN.CommonSounds = {} -- List for Common sounds for company
     ToLissAN.SpecificSounds = {} -- List for Specific sounds for company
     ToLissAN.Datarefs = {} -- List of dataref for monitoring
@@ -769,7 +730,13 @@ function ToLissAN_Initialization()
     ToLissAN_Log("✅ ---ToLissAN_Initialization---")
 
     TolissAN_SetDefaultValues()
-    ToLissAN_IncludeResourcesForMenu()
+    ToLissAN.CompanyList = ToLissAN_GetCompanyList()
+
+    ToLissAN.Windows = float_wnd_create(300, 100, 1, true)
+    float_wnd_set_title(ToLissAN.Windows, "ToLissAN - Select a company")
+    float_wnd_set_imgui_builder(ToLissAN.Windows, "ToLissAN_CreateCompanyCombo")
+    float_wnd_set_onclose(ToLissAN.Windows, "ToLissAN_CloseCompanySelectionWindow")
+
     ToLissAN_LoadCommonSoundsForCompany()
     ToLissAN_LoadSpecificSoundsForCompany(ToLissAN.SelectedCompanyName)
     ToLissAN_LoadDatarefsForEvents()
@@ -787,9 +754,10 @@ if  (string.lower(PLANE_AUTHOR) == "gliding kiwi") then
     ToLissAN_Log("🛫 Start ToLissAN program for Toliss " .. PLANE_ICAO)
 
     ToLissAN_Initialization()
-    ToLissAN_PrepareMenu()
+
+    XPLMSpeakString("Welcome to the Toliss Announcement Program, Please, Select a company from this company selected list")
 
     do_every_frame("ToLissAN_CheckDataref()")
+    do_every_draw("ToLissAN_ShowSelectedCompany()")
 
-    do_on_exit("ToLissAN_DestroyMenu()")
 end

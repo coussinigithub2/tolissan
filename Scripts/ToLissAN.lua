@@ -41,8 +41,10 @@ function ToLissAN_CreateCompanyCombo(wnd, x, y)
             end
         end
 
-        ToLissAN.SelectedCompanyName = ToLissAN.CompanyList[ToLissAN.Company]
-        ToLissAN_LoadSpecificSoundsForCompany(ToLissAN.SelectedCompanyName)
+        if ToLissAN.CompanyList[ToLissAN.Company] ~= ToLissAN.SelectedCompanyName then
+            ToLissAN.SelectedCompanyName = ToLissAN.CompanyList[ToLissAN.Company]
+            ToLissAN_LoadSpecificSoundsForCompany(ToLissAN.SelectedCompanyName)
+        end
 
         imgui.EndCombo()
     end
@@ -71,6 +73,8 @@ end
 --++----------------------------------------------------------------------++
 function ToLissAN_GetCompanyList()
 
+    ToLissAN_Log("🟢 ---ToLissAN_GetCompanyList---")
+
     local cmd = "dir /b \"" .. ToLissAN.SoundsPackPath .. "\""
     local file = io.popen(cmd)
     local list = {}
@@ -83,6 +87,8 @@ function ToLissAN_GetCompanyList()
         end
         file:close()
     end
+
+    ToLissAN_Log("✅ Company list created")
 
     return list
 
@@ -107,36 +113,36 @@ function ToLissAN_CheckDataref()
 
         if DATAREF_TolissPhase == 0 then
             ToLissAN.isPreflight = true
-            ToLissAN_Log("ℹ️ isPreflight = " .. tostring(ToLissAN.isPreflight))
+            ToLissAN_Log("📉 isPreflight = " .. tostring(ToLissAN.isPreflight))
         elseif DATAREF_TolissPhase == 1 then
             ToLissAN.isPreflight = false
             ToLissAN.isTakeoff = true
-            ToLissAN_Log("ℹ️ isTakeoff = " .. tostring(ToLissAN.isTakeoff))
+            ToLissAN_Log("📉 isTakeoff = " .. tostring(ToLissAN.isTakeoff))
         elseif DATAREF_TolissPhase == 2 then
             ToLissAN.isTakeoff = false
             ToLissAN.isClimb = true
-            ToLissAN_Log("ℹ️ isClimb = " .. tostring(ToLissAN.isClimb))
+            ToLissAN_Log("📉 isClimb = " .. tostring(ToLissAN.isClimb))
         elseif DATAREF_TolissPhase == 3 then
             ToLissAN.isClimb = false
             ToLissAN.isCruise = true
-            ToLissAN_Log("ℹ️ isCruise = " .. tostring(ToLissAN.isCruise))
+            ToLissAN_Log("📉 isCruise = " .. tostring(ToLissAN.isCruise))
         elseif DATAREF_TolissPhase == 4 then
             ToLissAN.isCruise = false
             ToLissAN.isDescent = true
-            ToLissAN_Log("ℹ️ isDescent = " .. tostring(ToLissAN.isDescent))
+            ToLissAN_Log("📉 isDescent = " .. tostring(ToLissAN.isDescent))
         elseif DATAREF_TolissPhase == 5 then
             ToLissAN.isDescent = false
             ToLissAN.isApproach = true
-            ToLissAN_Log("ℹ️ isApproach = " .. tostring(ToLissAN.isApproach))
+            ToLissAN_Log("📉 isApproach = " .. tostring(ToLissAN.isApproach))
         elseif DATAREF_TolissPhase == 6 then
             ToLissAN.isApproach = false
             ToLissAN.isGoAround = true
-            ToLissAN_Log("ℹ️ isGoAround = " .. tostring(ToLissAN.isGoAround))
+            ToLissAN_Log("📉 isGoAround = " .. tostring(ToLissAN.isGoAround))
         elseif DATAREF_TolissPhase == 7 then
             ToLissAN.isApproach = false
             ToLissAN.isGoAround = false
             ToLissAN.isDone = true
-            ToLissAN_Log("ℹ️ isLanding = " .. tostring(ToLissAN.isDone))
+            ToLissAN_Log("📉 isLanding = " .. tostring(ToLissAN.isDone))
         end
 
         DATAREF_TolissPhaseBefore = DATAREF_TolissPhase
@@ -190,6 +196,7 @@ function ToLissAN_CheckDataref()
         if DATAREF_ExtPwr == 1 then
             set_sound_gain(ToLissAN.CommonSounds["Boarding_Ambience"].sound, 0.10)
             play_sound(ToLissAN.CommonSounds["Boarding_Ambience"].sound)
+            ToLissAN_Log("🔊 Playing Boarding_Ambience")
             ToLissAN.CommonSounds["Boarding_Ambience"].played = true
         end
 
@@ -205,6 +212,7 @@ function ToLissAN_CheckDataref()
 
         if DATAREF_MainDoor == 0 then
             play_sound(ToLissAN.CommonSounds["DoorsCrossCheck"].sound)
+            ToLissAN_Log("🔊 Playing DoorsCrossCheck")
             ToLissAN.CommonSounds["DoorsCrossCheck"].played = true
         end
 
@@ -220,6 +228,7 @@ function ToLissAN_CheckDataref()
 
         if DATAREF_BeaconLight == 1 then
             play_sound(ToLissAN.CommonSounds["CptWelcome"].sound)
+            ToLissAN_Log("🔊 Playing CptWelcome")
             ToLissAN.CommonSounds["CptWelcome"].played = true
         end
 
@@ -234,6 +243,7 @@ function ToLissAN_CheckDataref()
        ToLissAN.isAirbusStarted then
 
         play_sound(ToLissAN.SpecificSounds["Safety"].sound)
+        ToLissAN_Log("🔊 Playing Safety")
         ToLissAN.SpecificSounds["Safety"].played = true
     end
 
@@ -246,6 +256,7 @@ function ToLissAN_CheckDataref()
 
         if DATAREF_StrobeLightOn == 2 then
             play_sound(ToLissAN.CommonSounds["CptTakeoff"].sound)
+            ToLissAN_Log("🔊 Playing CptTakeoff")
             ToLissAN.CommonSounds["CptTakeoff"].played = true
         end
 
@@ -259,6 +270,7 @@ function ToLissAN_CheckDataref()
        ToLissAN.CommonSounds["ThrustSet"].played then
 
         play_sound(ToLissAN.CommonSounds["ThrustSet"].sound)
+        ToLissAN_Log("🔊 Playing ThrustSet")
         ToLissAN.CommonSounds["ThrustSet"].played = true
 
         --------------------------------------------
@@ -275,6 +287,7 @@ function ToLissAN_CheckDataref()
        ToLissAN.is100KtsReached then
 
         play_sound(ToLissAN.CommonSounds["100kts"].sound)
+        ToLissAN_Log("🔊 Playing 100kts")
         ToLissAN.CommonSounds["100kts"].played = true
     end
 
@@ -286,6 +299,7 @@ function ToLissAN_CheckDataref()
        ToLissAN.isV1Reached  then
 
         play_sound(ToLissAN.CommonSounds["V1"].sound)
+        ToLissAN_Log("🔊 Playing V1")
         ToLissAN.CommonSounds["V1"].played = true
     end
 
@@ -297,6 +311,7 @@ function ToLissAN_CheckDataref()
        ToLissAN.isV2Reached  then
 
         play_sound(ToLissAN.CommonSounds["Rotate"].sound)
+        ToLissAN_Log("🔊 Playing Rotate")
         ToLissAN.CommonSounds["Rotate"].played = true
     end
 
@@ -308,6 +323,7 @@ function ToLissAN_CheckDataref()
        DATAREF_VviFpmPilot > 500 then
 
         play_sound(ToLissAN.CommonSounds["PositiveClimb"].sound)
+        ToLissAN_Log("🔊 Playing PositiveClimb")
         ToLissAN.CommonSounds["PositiveClimb"].played = true
     end
 
@@ -320,6 +336,7 @@ function ToLissAN_CheckDataref()
        DATAREF_GearLever == 0 then
 
         play_sound(ToLissAN.CommonSounds["GearUp"].sound)
+        ToLissAN_Log("🔊 Playing GearUp")
         ToLissAN.CommonSounds["GearUp"].played = true
     end
 
@@ -337,24 +354,28 @@ function ToLissAN_CheckDataref()
         if DATAREF_FlapLeverRatio == 0 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap0"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap0"].sound)
+                ToLissAN_Log("🔊 Playing SpeedCheckFlap0")
                 ToLissAN.CommonSounds["SpeedCheckFlap0"].played = true
             end
 
         elseif DATAREF_FlapLeverRatio == 0.25 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap1"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap1"].sound)
+                ToLissAN_Log("🔊 Playing SpeedCheckFlap1")
                 ToLissAN.CommonSounds["SpeedCheckFlap1"].played = true
             end
 
         elseif DATAREF_FlapLeverRatio == 0.5 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap2"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap2"].sound)
+                ToLissAN_Log("🔊 Playing SpeedCheckFlap2")
                 ToLissAN.CommonSounds["SpeedCheckFlap2"].played = true
             end
 
         elseif DATAREF_FlapLeverRatio == 0.75 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap3"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap3"].sound)
+                ToLissAN_Log("🔊 Playing SpeedCheckFlap3")
                 ToLissAN.CommonSounds["SpeedCheckFlap3"].played = true
             end
         end
@@ -371,6 +392,7 @@ function ToLissAN_CheckDataref()
 
         if DATAREF_SeatBeltSignsOn == 0 then
             play_sound(ToLissAN.CommonSounds["DutyFree"].sound)
+            ToLissAN_Log("🔊 Playing DutyFree")
             ToLissAN.CommonSounds["DutyFree"].played = true
         end
 
@@ -384,6 +406,7 @@ function ToLissAN_CheckDataref()
        ToLissAN.CommonSounds["CptCruiseLvl"].played then
 
         play_sound(ToLissAN.CommonSounds["CptCruiseLvl"].sound)
+        ToLissAN_Log("🔊 Playing CptCruiseLvl")
         ToLissAN.CommonSounds["CptCruiseLvl"].played = true
     end
 
@@ -394,6 +417,7 @@ function ToLissAN_CheckDataref()
        ToLissAN.CommonSounds["CptDescent"].played  then
 
         play_sound(ToLissAN.CommonSounds["CptDescent"].sound)
+        ToLissAN_Log("🔊 Playing CptDescent")
         ToLissAN.CommonSounds["CptDescent"].played = true
 
     end
@@ -413,30 +437,35 @@ function ToLissAN_CheckDataref()
         if DATAREF_FlapLeverRatio == 0 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap0"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap0"].sound)
+                ToLissAN_Log("🔊 Playing SpeedCheckFlap0")
                 ToLissAN.CommonSounds["SpeedCheckFlap0"].played = true
             end
 
         elseif DATAREF_FlapLeverRatio == 0.25 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap1"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap1"].sound)
+                ToLissAN_Log("🔊 Playing SpeedCheckFlap1")
                 ToLissAN.CommonSounds["SpeedCheckFlap1"].played = true
             end
 
         elseif DATAREF_FlapLeverRatio == 0.5 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap2"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap2"].sound)
+                ToLissAN_Log("🔊 Playing SpeedCheckFlap2")
                 ToLissAN.CommonSounds["SpeedCheckFlap2"].played = true
             end
 
         elseif DATAREF_FlapLeverRatio == 0.75 then
             if not ToLissAN.CommonSounds["SpeedCheckFlap3"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlap3"].sound)
+                ToLissAN_Log("🔊 Playing SpeedCheckFlap3")
                 ToLissAN.CommonSounds["SpeedCheckFlap3"].played = true
             end
 
         elseif DATAREF_FlapLeverRatio == 1 then
             if not ToLissAN.CommonSounds["SpeedCheckFlapFull"].played then
                 play_sound(ToLissAN.CommonSounds["SpeedCheckFlapFull"].sound)
+                ToLissAN_Log("🔊 Playing SpeedCheckFlapFull")
                 ToLissAN.CommonSounds["SpeedCheckFlapFull"].played = true
             end
         end
@@ -451,6 +480,7 @@ function ToLissAN_CheckDataref()
        DATAREF_GearLever == 1 then
 
         play_sound(ToLissAN.CommonSounds["GearDown"].sound)
+        ToLissAN_Log("🔊 Playing GearDown")
         ToLissAN.CommonSounds["GearDown"].played = true
     end
 
@@ -461,6 +491,7 @@ function ToLissAN_CheckDataref()
        ToLissAN.CommonSounds["CptLanding"].played  then
 
         play_sound(ToLissAN.CommonSounds["CptLanding"].sound)
+        ToLissAN_Log("🔊 Playing CptLanding")
         ToLissAN.CommonSounds["CptLanding"].played = true
     end
 
@@ -487,6 +518,7 @@ function ToLissAN_CheckDataref()
        DATAREF_Spoiler1 == 1 then
 
         play_sound(ToLissAN.CommonSounds["Spoilers"].sound)
+        ToLissAN_Log("🔊 Playing Spoilers")
         ToLissAN.CommonSounds["Spoilers"].played = true
 
         if DATAREF_AutoBrkLo == 1 then
@@ -505,6 +537,7 @@ function ToLissAN_CheckDataref()
        UTILITIES_TotalRunningTimeSec > ToLissAN.TimerSpoilers then
 
         play_sound(ToLissAN.CommonSounds["Decel"].sound)
+        ToLissAN_Log("🔊 Playing Decel")
         ToLissAN.CommonSounds["Decel"].played = true
     end
 
@@ -517,6 +550,7 @@ function ToLissAN_CheckDataref()
        DATAREF_IasCaptain < 70 then
 
         play_sound(ToLissAN.CommonSounds["70kts"].sound)
+        ToLissAN_Log("🔊 Playing 70kts")
         ToLissAN.CommonSounds["70kts"].played = true
     end
 end
@@ -526,7 +560,7 @@ end
 --++------------------------------------------------------------++
 function ToLissAN_LoadDatarefsForEvents()
 
-    ToLissAN_Log("✅ ---ToLissAN_LoadDatarefsForEvents---")
+    ToLissAN_Log("🟢 ---ToLissAN_LoadDatarefsForEvents---")
 
     DataRef("UTILITIES_TotalRunningTimeSec","sim/time/total_running_time_sec","readonly")
 
@@ -608,7 +642,7 @@ end
 --++---------------------------------------------------------------------------++
 function ToLissAN_LoadSpecificSoundsForCompany(company)
 
-    ToLissAN_Log("✅ ---ToLissAN_LoadSpecificSoundsForCompany---")
+    ToLissAN_Log("🟢 ---ToLissAN_LoadSpecificSoundsForCompany---")
 
     local sounds = {
         Safety = "Safety.wav"
@@ -619,7 +653,7 @@ function ToLissAN_LoadSpecificSoundsForCompany(company)
             if ToLissAN.SpecificSounds[name] and ToLissAN.SpecificSounds[name].sound then
                 stop_sound(ToLissAN.SpecificSounds[name].sound)
                 replace_WAV_file(ToLissAN.SpecificSounds[name].sound, ToLissAN.SoundsPackPath .. "/" .. company .. "/" .. file)
-                ToLissAN_Log("ℹ️ Previous company '" .. name .. "' sound, stopped and replaced successfully.")
+                ToLissAN_Log("📢 Previous company '" .. name .. "' sound, stopped and replaced successfully.")
             end
         end)
         ToLissAN.SpecificSounds[name] = {
@@ -640,7 +674,7 @@ function ToLissAN_LoadCommonSoundsForCompany()
 
     -- Safety.wav treated in ToLissAN_LoadSpecificSoundsForCompany()
 
-    ToLissAN_Log("✅ ---ToLissAN_LoadCommonSoundsForCompany---")
+    ToLissAN_Log("🟢 ---ToLissAN_LoadCommonSoundsForCompany---")
 
     local sounds = {
         Boarding_Ambience       = "Boarding_Ambience.wav",
@@ -686,7 +720,7 @@ end
 --++-----------------------------------------------------------------++
 function TolissAN_SetDefaultValues()
 
-    ToLissAN_Log("✅ ---TolissAN_SetDefaultValues---")
+    ToLissAN_Log("🟢 ---TolissAN_SetDefaultValues---")
 
     ToLissAN.SoundsPackPath = SCRIPT_DIRECTORY .. "ToLissAN_sounds"
 
@@ -727,7 +761,7 @@ end
 --++---------------------------------------------------------++
 function ToLissAN_Initialization()
 
-    ToLissAN_Log("✅ ---ToLissAN_Initialization---")
+    ToLissAN_Log("🟢 ---ToLissAN_Initialization---")
 
     TolissAN_SetDefaultValues()
     ToLissAN.CompanyList = ToLissAN_GetCompanyList()
@@ -751,7 +785,7 @@ end
 --+====================================================================+
 if  (string.lower(PLANE_AUTHOR) == "gliding kiwi") then
 
-    ToLissAN_Log("🛫 Start ToLissAN program for Toliss " .. PLANE_ICAO)
+    ToLissAN_Log("🟢 Start ToLissAN program for Toliss " .. PLANE_ICAO)
 
     ToLissAN_Initialization()
 

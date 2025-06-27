@@ -113,6 +113,7 @@ function ToLissAN_CheckDataref()
 
         if DATAREF_TolissPhase == 0 then
             ToLissAN.isPreflight = true
+            ToLissAN_Log("🟢 ---ToLissAN_CheckDataref---")
             ToLissAN_Log("📉 isPreflight = " .. tostring(ToLissAN.isPreflight))
         elseif DATAREF_TolissPhase == 1 then
             ToLissAN.isPreflight = false
@@ -552,6 +553,7 @@ function ToLissAN_CheckDataref()
         play_sound(ToLissAN.CommonSounds["70kts"].sound)
         ToLissAN_Log("🔊 Playing 70kts")
         ToLissAN.CommonSounds["70kts"].played = true
+        ToLissAN_Log("✅ Ending Sound playing")
     end
 end
 
@@ -663,7 +665,7 @@ function ToLissAN_LoadSpecificSoundsForCompany(company)
         }
     end
 
-    ToLissAN_Log("📢 Specific Sounds loaded for : " .. company)
+    ToLissAN_Log("✅ Specific Sounds loaded for : " .. company)
 
 end
 
@@ -783,9 +785,10 @@ end
 --|       T H E   F O L L O W I N G   I S   T H E    M A I N           |
 --|                          S E C T I O N                             |
 --+====================================================================+
-if  (string.lower(PLANE_AUTHOR) == "gliding kiwi") then
+if  (string.lower(PLANE_AUTHOR) == "gliding kiwi") or
+    (string.lower(PLANE_AUTHOR) == "glidingkiwi") then
 
-    ToLissAN_Log("🟢 Start ToLissAN program for Toliss " .. PLANE_ICAO)
+    ToLissAN_Log("🆗 Start ToLissAN program for Toliss " .. PLANE_ICAO)
 
     ToLissAN_Initialization()
 

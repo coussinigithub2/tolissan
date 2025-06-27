@@ -253,6 +253,7 @@ function ToLissAN_CheckDataref()
     -----------------
     if ToLissAN.isPreflight and not
        ToLissAN.CommonSounds["CptTakeoff"].played and
+       ToLissAN.SpecificSounds["Safety"].played and
        DATAREF_StrobeLightOnBefore ~= DATAREF_StrobeLightOn then
 
         if DATAREF_StrobeLightOn == 2 then
@@ -515,6 +516,8 @@ function ToLissAN_CheckDataref()
     --------------
     if ToLissAN.isApproach and not
        ToLissAN.CommonSounds["Spoilers"].played and
+       ToLissAN.CommonSounds["CptLanding"].played and
+       DATAREF_RadioAltimeterHeightPilot < 3 and
        DATAREF_Spoiler0 == 1 and
        DATAREF_Spoiler1 == 1 then
 
@@ -535,6 +538,7 @@ function ToLissAN_CheckDataref()
     if ToLissAN.isApproach and not
        ToLissAN.CommonSounds["Decel"].played and
        ToLissAN.CommonSounds["Spoilers"].played and
+       DATAREF_RadioAltimeterHeightPilot < 3 and
        UTILITIES_TotalRunningTimeSec > ToLissAN.TimerSpoilers then
 
         play_sound(ToLissAN.CommonSounds["Decel"].sound)

@@ -557,6 +557,20 @@ function ToLissAN_CheckDataref()
         play_sound(ToLissAN.CommonSounds["70kts"].sound)
         ToLissAN_Log("🔊 Playing 70kts")
         ToLissAN.CommonSounds["70kts"].played = true
+        ToLissAN.CommonSounds["Boarding_Ambience"].played = false
+    end
+
+    -------------------------
+    -- DEBOARDING AMBIENCE --
+    -------------------------
+    if ToLissAN.isDone and not
+       ToLissAN.CommonSounds["Boarding_Ambience"].played and
+       ToLissAN.CommonSounds["70kts"].played and
+       DATAREF_SeatBeltSignsOn == 0 then
+
+        play_sound(ToLissAN.CommonSounds["Boarding_Ambience"].sound)
+        ToLissAN_Log("🔊 Playing Boarding_Ambience")
+        ToLissAN.CommonSounds["Boarding_Ambience"].played = true
         ToLissAN_Log("✅ Ending Sound playing")
     end
 end
